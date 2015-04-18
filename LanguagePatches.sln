@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguagePatches", "LanguagePatches/LanguagePatches.csproj", "{4157F2AD-96D9-48A6-836B-BDCFEEE90DC7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4157F2AD-96D9-48A6-836B-BDCFEEE90DC7}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{4157F2AD-96D9-48A6-836B-BDCFEEE90DC7}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{4157F2AD-96D9-48A6-836B-BDCFEEE90DC7}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{4157F2AD-96D9-48A6-836B-BDCFEEE90DC7}.Release|AnyCPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
