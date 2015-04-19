@@ -50,6 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LanguagePatches\LanguagePatches\xSpaceCentre.cs" />
     <Compile Include="LanguagePatches\LanguagePatches\xFont.cs" />
     <Compile Include="LanguagePatches\Loader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
