@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
  * 
@@ -59,22 +59,23 @@ namespace LanguagePatches
 
         void Start()
         {
-            var body = LoadConfig();
+            if (Loader.loadCache == "active")
+            { 
+                var body = LoadConfig();
 
-            if (body != null)
-            {
-                // Scan the solar system and replace descriptions
-                foreach (CelestialBody cb in FlightGlobals.Bodies)
+                if (body != null)
                 {
-                    if (body.Keys.Contains(cb.gameObject.name))
+                    // Scan the solar system and replace descriptions
+                    foreach (CelestialBody cb in FlightGlobals.Bodies)
                     {
-                        cb.bodyDescription = body[cb.gameObject.name];
-                        cb.CBUpdate();
+                        if (body.Keys.Contains(cb.gameObject.name))
+                        {
+                            cb.bodyDescription = body[cb.gameObject.name];
+                            cb.CBUpdate();
+                        }
                     }
                 }
             }
         }
     }
 }
-
-
