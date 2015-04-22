@@ -44,64 +44,70 @@ namespace LanguagePatches
 
         public void Awake()
         {
-            // Load SpriteText from .xml
-            LoadDict();
-            Directory.CreateDirectory(directory);
-            logger = new StreamWriter(Path.Combine(directory, HighLogic.LoadedScene.ToString() + ".log"));
+            if (Loader.loadCache == "active")
+            {
+                // Load SpriteText from .xml
+                LoadDict();
+                Directory.CreateDirectory(directory);
+                logger = new StreamWriter(Path.Combine(directory, HighLogic.LoadedScene.ToString() + ".log"));
+            }
         }
 
         public void Update()
         {
-            // Patch all SpriteTexts
-            if (patched.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
+            if (Loader.loadCache == "active")
             {
-                // Go through all objects
-                foreach (SpriteText txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteText)))
+                // Patch all SpriteTexts
+                if (patched.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
                 {
-                    if (!patched.Contains(txt))
+                    // Go through all objects
+                    foreach (SpriteText txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteText)))
                     {
-                        logger.WriteLine("[SpriteText] " + txt.Text);
-                        txt.Text = xText.Trans(txt.Text);
-                        xFont.FontIfy(txt);
-                        patched.Add(txt);
-                        txt.UpdateMesh();
+                        if (!patched.Contains(txt))
+                        {
+                            logger.WriteLine("[SpriteText] " + txt.Text);
+                            txt.Text = xText.Trans(txt.Text);
+                            xFont.FontIfy(txt);
+                            patched.Add(txt);
+                            txt.UpdateMesh();
 
+                        }
                     }
                 }
-            }
-            else
-            {
-                finish[0] = true;
-            }
-
-            // Patch all SpriteTextRichs
-            if (patchedRich.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
-            {
-                // Go through all objects
-                foreach (SpriteTextRich txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
+                else
                 {
-                    if (!patchedRich.Contains(txt))
+                    finish[0] = true;
+                }
+
+                // Patch all SpriteTextRichs
+                if (patchedRich.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+                {
+                    // Go through all objects
+                    foreach (SpriteTextRich txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
                     {
-                        logger.WriteLine("[SpriteTextRich] " + txt.Text);
-                        txt.Text = xText.Trans(txt.text); 
-                        xFont.FontIfy(txt);
-                        patchedRich.Add(txt);
-                        txt.UpdateMesh();
+                        if (!patchedRich.Contains(txt))
+                        {
+                            logger.WriteLine("[SpriteTextRich] " + txt.Text);
+                            txt.Text = xText.Trans(txt.text);
+                            xFont.FontIfy(txt);
+                            patchedRich.Add(txt);
+                            txt.UpdateMesh();
+                        }
                     }
                 }
-            } 
-            else 
-            {
-                finish[1] = true;
-            }
+                else
+                {
+                    finish[1] = true;
+                }
 
-            if (finish[0] && finish[1]) 
-            {
-                logger.Flush();
-                logger.Close();
-            }
+                if (finish[0] && finish[1])
+                {
+                    logger.Flush();
+                    logger.Close();
+                }
 
-            Debug.Log("GUI: " + GUIText.FindObjectsOfTypeAll(typeof(GUIText)).Length);
+                Debug.Log("GUI: " + GUIText.FindObjectsOfTypeAll(typeof(GUIText)).Length);
+            }
         }
 
 
