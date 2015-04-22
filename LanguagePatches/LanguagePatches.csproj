@@ -53,6 +53,7 @@
     <Compile Include="LanguagePatches\LanguagePatches\xSpaceCenter.cs" />
     <Compile Include="LanguagePatches\LanguagePatches\xFont.cs" />
     <Compile Include="LanguagePatches\Loader.cs" />
+    <Compile Include="LanguagePatches\Setting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <AutoGen>false</AutoGen>
       <DesignTimeSharedInput>false</DesignTimeSharedInput>
