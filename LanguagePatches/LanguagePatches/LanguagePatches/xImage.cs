@@ -61,50 +61,56 @@ namespace LanguagePatches
 
         private void Start()
         {
-            // Load the actual images
-            if (xImage.ImageFiles == null)
+            if (Loader.loadCache == "active")
             {
-                xImage.ImageFiles = new Dictionary<string, string>();
-                foreach (string list in Directory.GetFiles(Loader.images).ToList<string>())
+                // Load the actual images
+                if (xImage.ImageFiles == null)
                 {
-                    xImage.ImageFiles.Add(Path.GetFileNameWithoutExtension(list), list);
+                    xImage.ImageFiles = new Dictionary<string, string>();
+                    foreach (string list in Directory.GetFiles(Loader.images).ToList<string>())
+                    {
+                        xImage.ImageFiles.Add(Path.GetFileNameWithoutExtension(list), list);
+                    }
+                    if (xImage.config == null)
+                    {
+                        xImage.LoadConfig();
+                    }
+                    xImage.LoadedLevels = new List<int>();
                 }
-                if (xImage.config == null)
-                {
-                    xImage.LoadConfig();
-                }
-                xImage.LoadedLevels = new List<int>();
             }
         }
 
         private void Update()
         {
-            // Apply the new Textures
-            if (!this.IsOver)
+            if (Loader.loadCache == "active")
             {
-                if (!xImage.LoadedLevels.Contains(Application.loadedLevel))
+            // Apply the new Textures
+                if (!this.IsOver)
                 {
-                    xImage.LoadedLevels.Add(Application.loadedLevel);
-                    Material[] materialArray = Resources.FindObjectsOfTypeAll<Material>();
-                    for (int i = 0; i < (int)materialArray.Length; i++)
+                    if (!xImage.LoadedLevels.Contains(Application.loadedLevel))
                     {
-                        Material material = materialArray[i];
-                        Texture texture = material.GetTexture("_MainTex");
-                        if (!(texture == null))
+                        xImage.LoadedLevels.Add(Application.loadedLevel);
+                        Material[] materialArray = Resources.FindObjectsOfTypeAll<Material>();
+                        for (int i = 0; i < (int)materialArray.Length; i++)
                         {
-                            if (xImage.ImageFiles.ContainsKey(texture.name))
+                            Material material = materialArray[i];
+                            Texture texture = material.GetTexture("_MainTex");
+                            if (!(texture == null))
                             {
-                                Texture2D texture2D = new Texture2D(xImage.config[texture.name], xImage.config[texture.name], TextureFormat.ARGB32, false);
-                                texture2D.LoadImage(File.ReadAllBytes(xImage.ImageFiles[texture.name]));
-                                material.SetTexture("_MainTex", texture2D);
-                                xImage.ImageFiles.Remove(texture.name);
-                                GameObject gameObject = new GameObject(string.Concat("DDOL_", texture.name));
-                                gameObject.AddComponent<MeshRenderer>().material = material;
-                                UnityEngine.Object.DontDestroyOnLoad(gameObject);
+                                if (xImage.ImageFiles.ContainsKey(texture.name))
+                                {
+                                    Texture2D texture2D = new Texture2D(xImage.config[texture.name], xImage.config[texture.name], TextureFormat.ARGB32, false);
+                                    texture2D.LoadImage(File.ReadAllBytes(xImage.ImageFiles[texture.name]));
+                                    material.SetTexture("_MainTex", texture2D);
+                                    xImage.ImageFiles.Remove(texture.name);
+                                    GameObject gameObject = new GameObject(string.Concat("DDOL_", texture.name));
+                                    gameObject.AddComponent<MeshRenderer>().material = material;
+                                    UnityEngine.Object.DontDestroyOnLoad(gameObject);
+                                }
                             }
                         }
+                        this.IsOver = true;
                     }
-                    this.IsOver = true;
                 }
             }
         }
