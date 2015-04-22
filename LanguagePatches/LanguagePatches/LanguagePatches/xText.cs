@@ -58,10 +58,10 @@ namespace LanguagePatches
             if (Loader.loadCache == "active")
             {
                 // Patch all SpriteTexts
-                if (patched.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
+                if (patched.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
                 {
                     // Go through all objects
-                    foreach (SpriteText txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteText)))
+                    foreach (SpriteText txt in Resources.FindObjectsOfTypeAll(typeof(SpriteText)))
                     {
                         if (!patched.Contains(txt))
                         {
@@ -80,10 +80,10 @@ namespace LanguagePatches
                 }
 
                 // Patch all SpriteTextRichs
-                if (patchedRich.Count < GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+                if (patchedRich.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
                 {
                     // Go through all objects
-                    foreach (SpriteTextRich txt in GameObject.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
+                    foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
                     {
                         if (!patchedRich.Contains(txt))
                         {
@@ -105,8 +105,6 @@ namespace LanguagePatches
                     logger.Flush();
                     logger.Close();
                 }
-
-                Debug.Log("GUI: " + GUIText.FindObjectsOfTypeAll(typeof(GUIText)).Length);
             }
         }
 
