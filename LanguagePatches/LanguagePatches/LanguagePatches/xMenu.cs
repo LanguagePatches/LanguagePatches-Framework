@@ -45,7 +45,6 @@ namespace LanguagePatches
             if (fontIfy)
                 xFont.FontIfy(component, size);
         }
-
         // Update the MainMenu Buttons
         private void Update()
         {
@@ -137,6 +136,15 @@ namespace LanguagePatches
             else
             {
                 return -1;
+            }
+        }
+
+        void OnGUI()
+        {
+            
+            if (HighLogic.LoadedScene.ToString() == "MAINMENU")
+            {
+                GUI.Label(new Rect(Screen.width - 200, Screen.height - 65, 200, 20), Loader.fullLangEnglish + " patch v" + Loader.version + " (" + Loader.loadCache + ")");
             }
         }
     }
