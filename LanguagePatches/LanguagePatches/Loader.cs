@@ -57,6 +57,9 @@ namespace LanguagePatches
         private static string Iraw = "";
         private static string ImustRestart = "";
         private static string IfullLang = "";
+        private static string IfullLangEN = "";
+        private static string Iversion = "";
+        private static string Icredits = "";
         public void Awake()
         {
             if (!File.Exists(Loader.path + "/save.cache"))
@@ -71,6 +74,9 @@ namespace LanguagePatches
                 Iraw = language.GetValue("path");
                 ImustRestart = language.GetNode("Settings").GetValue("mustRestart");
                 IfullLang = language.GetNode("Settings").GetValue("fullLang");
+                IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
+                Iversion = language.GetNode("Settings").GetValue("version");
+                Icredits = language.GetNode("Settings").GetValue("credits");
             }
             else
             {
@@ -108,6 +114,22 @@ namespace LanguagePatches
         {
             get { return IfullLang; }
             set { IfullLang = value; }
+        }
+        
+        public static string credits
+        {
+            get { return Icredits; }
+            set { Icredits = value; }
+        }
+        public static string version
+        {
+            get { return Iversion; }
+            set { Iversion = value; }
+        }
+        public static string fullLangEnglish
+        {
+            get { return IfullLangEN; }
+            set { IfullLangEN = value; }
         }
     }
 }
