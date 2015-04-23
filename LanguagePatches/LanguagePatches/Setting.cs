@@ -24,56 +24,48 @@
  * https://kerbalspaceprogram.com
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Xml;
+using System.Text;
 using UnityEngine;
 
 namespace LanguagePatches
 {
-    [KSPAddon(KSPAddon.Startup.PSystemSpawn, false)]
-    public class PlanetShifter : MonoBehaviour
+    [KSPAddon(KSPAddon.Startup.Settings, false)]
+    public class Setting : MonoBehaviour
     {
-        public Dictionary<string, string> LoadConfig()
-        {
-            if (File.Exists(Loader.path + "Body.xml"))
-            {
-                var body = new Dictionary<string, string>();
-
-                // Load descriptions from .xml
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(Loader.path + "Body.xml");
-                foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
-                {
-                    body[child.Name] = child.InnerText;
-                }
-
-                return body;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
+        public static bool toggle = true;
+        public GUISkin skin;
+        public extern static GUISkin Skin { get; }
         void Start()
         {
-            if (Loader.loadCache == "active")
-            { 
-                var body = LoadConfig();
-
-                if (body != null)
+            if (Loader.loadCache == "active") { Setting.toggle = true; }
+            else { Setting.toggle = false; }
+        }
+        void OnGUI()
+        {
+            // Settings window
+            if (HighLogic.LoadedScene.ToString() == "SETTINGS")
+            {
+                if (toggle)
                 {
-                    // Scan the solar system and replace descriptions
-                    foreach (CelestialBody cb in FlightGlobals.Bodies)
-                    {
-                        if (body.Keys.Contains(cb.gameObject.name))
-                        {
-                            cb.bodyDescription = body[cb.gameObject.name];
-                            cb.CBUpdate();
-                        }
-                    }
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang);
+                }
+                else
+                {
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " English");
+                }
+                GUI.Label(new Rect(Screen.width - 135, 20, 150, 50), Loader.mustRestart);
+                GUI.Label(new Rect(10,10,200,120), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
+                GUI.skin = HighLogic.Skin;
+                if (toggle == true)
+                {
+                    Loader.writeCache("active");
+                }
+                else
+                {
+                    Loader.writeCache("inactive");
                 }
             }
         }

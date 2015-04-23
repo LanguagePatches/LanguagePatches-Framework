@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
  * 
@@ -25,6 +25,7 @@
  */
 
 using System.Linq;
+using System.IO;
 using UnityEngine;
 
 namespace LanguagePatches
@@ -32,19 +33,50 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.Instantly, false)]
     public class Loader : MonoBehaviour
     {
+        public static void writeCache(string toggle)
+        {
+            if (File.Exists(Loader.path + "/save.cache")) { File.Delete(Loader.path + "/save.cache"); }
+            TextWriter cache = new StreamWriter(Loader.rawPath + "/save.cache");
+            cache.Write(toggle);
+            cache.Close();
+        }
+        public static string loadCache
+        {
+            get
+            {
+                StreamReader cacheReader = new StreamReader(Loader.rawPath + "/save.cache");
+                string line = cacheReader.ReadLine();
+                cacheReader.Close();
+                cacheReader.Dispose();
+                return line;
+            }
+        }
         // Multiple paths
         private static string Ipath = "";
         private static string Iimages = "";
-        private static string Iraw = ""; 
-
+        private static string Iraw = "";
+        private static string ImustRestart = "";
+        private static string IfullLang = "";
+        private static string IfullLangEN = "";
+        private static string Iversion = "";
+        private static string Icredits = "";
         public void Awake()
         {
+            if (!File.Exists(Loader.path + "/save.cache"))
+            {
+                writeCache("inactive");
+            }
             // There can only be one config node
             if (GameDatabase.Instance.GetConfigNodes("LanguagePatches").Count() == 1) {
                 ConfigNode language = GameDatabase.Instance.GetConfigNodes("LanguagePatches")[0];
                 Ipath = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("script") + "/" + language.GetValue("lang");
                 Iimages = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("images");
                 Iraw = language.GetValue("path");
+                ImustRestart = language.GetNode("Settings").GetValue("mustRestart");
+                IfullLang = language.GetNode("Settings").GetValue("fullLang");
+                IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
+                Iversion = language.GetNode("Settings").GetValue("version");
+                Icredits = language.GetNode("Settings").GetValue("credits");
             }
             else
             {
@@ -70,6 +102,34 @@ namespace LanguagePatches
         {
             get { return Iraw; }
             set { Iraw = value; }
+        }
+
+        public static string mustRestart
+        {
+            get { return ImustRestart; }
+            set { ImustRestart = value; }
+        }
+
+        public static string fullLang
+        {
+            get { return IfullLang; }
+            set { IfullLang = value; }
+        }
+        
+        public static string credits
+        {
+            get { return Icredits; }
+            set { Icredits = value; }
+        }
+        public static string version
+        {
+            get { return Iversion; }
+            set { Iversion = value; }
+        }
+        public static string fullLangEnglish
+        {
+            get { return IfullLangEN; }
+            set { IfullLangEN = value; }
         }
     }
 }

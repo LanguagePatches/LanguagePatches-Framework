@@ -43,52 +43,58 @@ namespace LanguagePatches
 
         private void Start()
         {
-            // Does our config exists?
-            if (File.Exists(Loader.path + "LoadingTips.xml"))
+            if (Loader.loadCache == "active")
             {
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(Loader.path + "LoadingTips.xml");
-                foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
+            // Does our config exists?
+                if (File.Exists(Loader.path + "LoadingTips.xml"))
                 {
-                    this.mytips.Add(childNode.InnerText ?? "");
-                }
+                    XmlDocument xmlDocument = new XmlDocument();
+                    xmlDocument.Load(Loader.path + "LoadingTips.xml");
+                    foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
+                    {
+                        this.mytips.Add(childNode.InnerText ?? "");
+                    }
 
-                if (xmlDocument.DocumentElement.HasAttribute("size"))
-                {
-                    size = float.Parse(xmlDocument.DocumentElement.GetAttribute("size"));
-                }
+                    if (xmlDocument.DocumentElement.HasAttribute("size"))
+                    {
+                        size = float.Parse(xmlDocument.DocumentElement.GetAttribute("size"));
+                    }
 
-                if (xmlDocument.DocumentElement.HasAttribute("replaceFont"))
-                {
-                    fontIfy = bool.Parse(xmlDocument.DocumentElement.GetAttribute("replaceFont"));
+                    if (xmlDocument.DocumentElement.HasAttribute("replaceFont"))
+                    {
+                        fontIfy = bool.Parse(xmlDocument.DocumentElement.GetAttribute("replaceFont"));
+                    }
                 }
             }
         }
 
         private void Update()
         {
-            // Get all TextMeshes and replace their text / font.
-            if (this.loadText == null)
+            if (Loader.loadCache == "active")
             {
-                GameObject gameObject = GameObject.Find("Text");
-                if (gameObject == null)
+                // Get all TextMeshes and replace their text / font.
+                if (this.loadText == null)
                 {
-                    return;
+                    GameObject gameObject = GameObject.Find("Text");
+                    if (gameObject == null)
+                    {
+                        return;
+                    }
+                    this.loadText = gameObject.GetComponent<TextMesh>();
+                    if (size == 0) size = this.loadText.characterSize;
                 }
-                this.loadText = gameObject.GetComponent<TextMesh>();
-                if (size == 0) size = this.loadText.characterSize;
-            }
-            if (this.nowText != this.loadText.text)
-            {
-                int num = this.random.Next(this.mytips.Count);
-                this.loadText.text = string.Concat("", this.mytips[num]);
-                this.nowText = this.loadText.text;
-                if (this.mytips.Count > 1)
+                if (this.nowText != this.loadText.text)
                 {
-                    this.mytips.RemoveAt(num);
+                    int num = this.random.Next(this.mytips.Count);
+                    this.loadText.text = string.Concat("", this.mytips[num]);
+                    this.nowText = this.loadText.text;
+                    if (this.mytips.Count > 1)
+                    {
+                        this.mytips.RemoveAt(num);
+                    }
+                    if (fontIfy)
+                        xFont.FontIfy(this.loadText, size);
                 }
-                if (fontIfy)
-                    xFont.FontIfy(this.loadText, size);
             }
         }
     }
