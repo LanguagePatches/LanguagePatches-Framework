@@ -48,8 +48,16 @@ namespace LanguagePatches
             // Settings window
             if (HighLogic.LoadedScene.ToString() == "SETTINGS")
             {
-                toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang);
+                if (toggle)
+                {
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang);
+                }
+                else
+                {
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " English");
+                }
                 GUI.Label(new Rect(Screen.width - 135, 20, 150, 50), Loader.mustRestart);
+                GUI.Label(new Rect(10,10,200,120), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
                 GUI.skin = HighLogic.Skin;
                 if (toggle == true)
                 {
@@ -60,7 +68,6 @@ namespace LanguagePatches
                     Loader.writeCache("inactive");
                 }
             }
-
         }
     }
 }
