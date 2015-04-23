@@ -55,10 +55,18 @@ namespace LanguagePatches
 
         public void Update()
         {
+<<<<<<< HEAD
             if (Loader.loadCache == "active")
             {
                 // Patch all SpriteTexts
                 if (patched.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
+=======
+            // Patch all SpriteTexts
+            if (patched.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
+            {
+                // Go through all objects
+                foreach (SpriteText txt in Resources.FindObjectsOfTypeAll(typeof(SpriteText)))
+>>>>>>> master
                 {
                     // Go through all objects
                     foreach (SpriteText txt in Resources.FindObjectsOfTypeAll(typeof(SpriteText)))
@@ -79,8 +87,16 @@ namespace LanguagePatches
                     finish[0] = true;
                 }
 
+<<<<<<< HEAD
                 // Patch all SpriteTextRichs
                 if (patchedRich.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+=======
+            // Patch all SpriteTextRichs
+            if (patchedRich.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+            {
+                // Go through all objects
+                foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
+>>>>>>> master
                 {
                     // Go through all objects
                     foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
