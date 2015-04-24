@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LanguagePatches\LanguagePatches\xSpaceCenter.cs" />
+    <Compile Include="LanguagePatches\LanguagePatches\xItem.cs" />
     <Compile Include="LanguagePatches\LanguagePatches\xFont.cs" />
     <Compile Include="LanguagePatches\Loader.cs" />
     <Compile Include="LanguagePatches\Setting.cs" />
