@@ -36,7 +36,7 @@ namespace LanguagePatches
     public class xSpaceCenter : MonoBehaviour
     {
         private ScreenSafeGUIText SSGT;
-        private string vab = "Vehicle Assembly Building", sph = "Space Plane Hangar", ac = "Astronaut Complex", ts = "Tracking Station", ab = "Assembly Building", rwy = "Runway" , mc = "Mission Control", flg = "Flag Pole", rnd = "Research and Development", lnchpd = "Launch Pad";
+        private string vab = "Vehicle Assembly Building", sph = "Space Plane Hangar", ac = "Astronaut Complex", ts = "Tracking Station", ab = "Administration Building", rwy = "Runway" , mc = "Mission Control", flg = "Flag Pole", rnd = "Research and Development", lnchpd = "Launch Pad";
 
         private void Start()
         {
