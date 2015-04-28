@@ -45,7 +45,7 @@ namespace LanguagePatches
 
         private void Update()
         {
-            if (File.Exists(Loader.path + "SpaceCenter.xml"))
+            if (Loader.loadCache && File.Exists(Loader.path + "SpaceCenter.xml"))
             {            
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.Load(Loader.path + "SpaceCenter.xml");

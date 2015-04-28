@@ -43,7 +43,7 @@ namespace LanguagePatches
 
         private void Start()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             {
             // Does our config exists?
                 if (File.Exists(Loader.path + "LoadingTips.xml"))
@@ -70,7 +70,7 @@ namespace LanguagePatches
 
         private void Update()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             {
                 // Get all TextMeshes and replace their text / font.
                 if (this.loadText == null)

@@ -36,38 +36,26 @@ namespace LanguagePatches
     public class Setting : MonoBehaviour
     {
         public static bool toggle = true;
-        public GUISkin skin;
-        public extern static GUISkin Skin { get; }
-        void Start()
+
+        void Awake()
         {
-            if (Loader.loadCache == "active") { Setting.toggle = true; }
-            else { Setting.toggle = false; }
+            toggle = Loader.loadCache;
         }
         void OnGUI()
         {
             // Settings window
-            if (HighLogic.LoadedScene.ToString() == "SETTINGS")
-            {
+                GUI.skin = HighLogic.Skin;
                 if (toggle)
                 {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang);
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang + " (" + Loader.mustRestart + ")");
                 }
                 else
                 {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " English");
+                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " English (Needs restart)");
                 }
-                GUI.Label(new Rect(Screen.width - 135, 20, 150, 50), Loader.mustRestart);
                 GUI.Label(new Rect(10,10,200,120), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
-                GUI.skin = HighLogic.Skin;
-                if (toggle == true)
-                {
-                    Loader.writeCache("active");
-                }
-                else
-                {
-                    Loader.writeCache("inactive");
-                }
-            }
+                Loader.writeCache(toggle);
+            
         }
     }
 }

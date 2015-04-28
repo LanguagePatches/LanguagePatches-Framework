@@ -61,7 +61,7 @@ namespace LanguagePatches
 
         private void Start()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             {
                 // Load the actual images
                 if (xImage.ImageFiles == null)
@@ -82,7 +82,7 @@ namespace LanguagePatches
 
         private void Update()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             {
             // Apply the new Textures
                 if (!this.IsOver)

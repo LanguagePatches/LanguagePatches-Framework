@@ -59,7 +59,7 @@ namespace LanguagePatches
 
         void Start()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             { 
                 var body = LoadConfig();
 

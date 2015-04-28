@@ -42,7 +42,7 @@ namespace LanguagePatches
 
         public static void Load()
         {
-            if (Loader.loadCache == "active" && File.Exists(Loader.path + "Item.xml"))
+            if (Loader.loadCache && File.Exists(Loader.path + "Item.xml"))
             { 
                 XmlDocument document = new XmlDocument();
                 document.Load(Loader.path + "Item.xml");
@@ -85,7 +85,7 @@ namespace LanguagePatches
 
         private void Start()
         {
-            if (Loader.loadCache == "active" && File.Exists(Loader.path + "Item.xml"))
+            if (Loader.loadCache && File.Exists(Loader.path + "Item.xml"))
             { 
                 if (zItems == null)
                 {
@@ -152,7 +152,7 @@ namespace LanguagePatches
 
         private void Update()
         {
-            if (Loader.loadCache == "active" && File.Exists(Loader.path + "Item.xml"))
+            if (Loader.loadCache && File.Exists(Loader.path + "Item.xml"))
             {
                 if (this._UI != null)
                 {

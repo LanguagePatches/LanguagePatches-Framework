@@ -33,22 +33,23 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.Instantly, false)]
     public class Loader : MonoBehaviour
     {
-        public static void writeCache(string toggle)
+        public static void writeCache(bool toggle)
         {
-            if (File.Exists(Loader.path + "/save.cache")) { File.Delete(Loader.path + "/save.cache"); }
-            TextWriter cache = new StreamWriter(Loader.rawPath + "/save.cache");
+            if (File.Exists(cachePath)) { File.Delete(cachePath); }
+            TextWriter cache = new StreamWriter(cachePath);
             cache.Write(toggle);
             cache.Close();
         }
-        public static string loadCache
+        public static bool loadCache
         {
             get
             {
-                StreamReader cacheReader = new StreamReader(Loader.rawPath + "/save.cache");
+                bool status = false;
+                StreamReader cacheReader = new StreamReader(cachePath);
                 string line = cacheReader.ReadLine();
                 cacheReader.Close();
-                cacheReader.Dispose();
-                return line;
+                if (bool.Parse(line) != status) status = bool.Parse(line);
+                return status;
             }
         }
         // Multiple paths
@@ -60,12 +61,9 @@ namespace LanguagePatches
         private static string IfullLangEN = "";
         private static string Iversion = "";
         private static string Icredits = "";
+        private static string cachePath = "";
         public void Awake()
         {
-            if (!File.Exists(Loader.path + "/save.cache"))
-            {
-                writeCache("inactive");
-            }
             // There can only be one config node
             if (GameDatabase.Instance.GetConfigNodes("LanguagePatches").Count() == 1) {
                 ConfigNode language = GameDatabase.Instance.GetConfigNodes("LanguagePatches")[0];
@@ -77,6 +75,13 @@ namespace LanguagePatches
                 IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
                 Iversion = language.GetNode("Settings").GetValue("version");
                 Icredits = language.GetNode("Settings").GetValue("credits");
+
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/" + Iraw + "/PluginData");
+                cachePath = Iraw + "/PluginData/CACHE";
+                if (!File.Exists(cachePath))
+                {
+                    writeCache(true);
+                }
             }
             else
             {

@@ -48,7 +48,7 @@ namespace LanguagePatches
         // Update the MainMenu Buttons
         private void Update()
         {
-            if (Loader.loadCache == "active")
+            if (Loader.loadCache)
             {
                 // Does our config exists?
                 if (!isOver && File.Exists(Loader.path + "Menu.xml"))
@@ -136,15 +136,6 @@ namespace LanguagePatches
             else
             {
                 return -1;
-            }
-        }
-
-        void OnGUI()
-        {
-            
-            if (HighLogic.LoadedScene.ToString() == "MAINMENU")
-            {
-                GUI.Label(new Rect(Screen.width - 200, Screen.height - 65, 200, 20), Loader.fullLangEnglish + " patch v" + Loader.version + " (" + Loader.loadCache + ")");
             }
         }
     }
