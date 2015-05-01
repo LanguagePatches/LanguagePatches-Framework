@@ -35,11 +35,9 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
     public class xImage : MonoBehaviour
     {
-        private static Dictionary<string, int> config;
+        private static List<string> config;
 
         private static List<int> LoadedLevels;
-
-        private static Dictionary<string, string> ImageFiles;
 
         private bool IsOver = false;
 
@@ -49,12 +47,12 @@ namespace LanguagePatches
             if (File.Exists(Loader.path + "Image.xml"))
             {
                 XmlDocument xmlDocument = new XmlDocument();
-                xImage.config = new Dictionary<string, int>();
+                xImage.config = new List<string>();
                 xmlDocument.Load(Loader.path + "Image.xml");
                 foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
                 {
                     // Load image paths
-                    xImage.config[childNode.GetAttribute("id")] = int.Parse(childNode.InnerText);
+                    xImage.config.Add(childNode.InnerText);
                 }
             }
         }
@@ -63,20 +61,8 @@ namespace LanguagePatches
         {
             if (Loader.loadCache)
             {
-                // Load the actual images
-                if (xImage.ImageFiles == null)
-                {
-                    xImage.ImageFiles = new Dictionary<string, string>();
-                    foreach (string list in Directory.GetFiles(Loader.images).ToList<string>())
-                    {
-                        xImage.ImageFiles.Add(Path.GetFileNameWithoutExtension(list), list);
-                    }
-                    if (xImage.config == null)
-                    {
-                        xImage.LoadConfig();
-                    }
-                    xImage.LoadedLevels = new List<int>();
-                }
+                LoadConfig();
+                LoadedLevels = new List<int>();
             }
         }
 
@@ -97,12 +83,11 @@ namespace LanguagePatches
                             Texture texture = material.GetTexture("_MainTex");
                             if (!(texture == null))
                             {
-                                if (xImage.ImageFiles.ContainsKey(texture.name))
+                                if (xImage.config.Contains(texture.name))
                                 {
-                                    Texture2D texture2D = new Texture2D(xImage.config[texture.name], xImage.config[texture.name], TextureFormat.ARGB32, false);
-                                    texture2D.LoadImage(File.ReadAllBytes(xImage.ImageFiles[texture.name]));
+                                    Texture2D texture2D = new Texture2D(2, 2);
+                                    texture2D.LoadImage(File.ReadAllBytes(KSPUtil.ApplicationRootPath + Loader.images + "/" + texture.name + ".png"));
                                     material.SetTexture("_MainTex", texture2D);
-                                    xImage.ImageFiles.Remove(texture.name);
                                     GameObject gameObject = new GameObject(string.Concat("DDOL_", texture.name));
                                     gameObject.AddComponent<MeshRenderer>().material = material;
                                     UnityEngine.Object.DontDestroyOnLoad(gameObject);
