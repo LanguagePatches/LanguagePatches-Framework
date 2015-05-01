@@ -103,7 +103,6 @@ namespace LanguagePatches
                 if (finish[0] && finish[1])
                 {
                     logger.Flush();
-                    logger.Close();
                 }
             }
         }

@@ -38,11 +38,6 @@ namespace LanguagePatches
 
         public static void FontIfy(TextMesh mesh, float size = -1)
         {
-            if (fonts == null)
-                GetConfig();
-
-            //if (fonts != null)
-            //{
                 Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font; 
                 Color o = mesh.renderer.sharedMaterial.color;
                 mesh.renderer.sharedMaterial = Arial.material;
@@ -53,7 +48,17 @@ namespace LanguagePatches
                 {
                     mesh.text = "<size=" + size.ToString() + ">" + mesh.text + "</size>";
                 }
-            //}
+        }
+
+        public static void FontIfy(ScreenSafeGUIText text, float size = -1)
+        {
+            Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            text.textStyle.font = Arial;
+            text.textStyle.richText = true;
+            if (size != -1)
+            {
+                text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
+            }
         }
 
         public static void FontIfy(SpriteText text)

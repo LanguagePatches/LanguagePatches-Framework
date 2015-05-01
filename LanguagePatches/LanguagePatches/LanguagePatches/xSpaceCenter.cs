@@ -49,6 +49,23 @@ namespace LanguagePatches
             {            
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.Load(Loader.path + "SpaceCenter.xml");
+                bool fontIfy = true;
+                if (xmlDocument.DocumentElement.HasAttribute("replaceFont") && !bool.Parse(xmlDocument.DocumentElement.GetAttribute("replaceFont")))
+                {
+                    fontIfy = false;
+                }
+
+                if (fontIfy)
+                {
+                    if (xmlDocument.DocumentElement.HasAttribute("size"))
+                    {
+                        xFont.FontIfy(SSGT, float.Parse(xmlDocument.DocumentElement.GetAttribute("size")));
+                    }
+                    else
+                    {
+                        xFont.FontIfy(SSGT);
+                    }
+                }
                 foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
                 {
                     switch (child.GetAttribute("building"))
