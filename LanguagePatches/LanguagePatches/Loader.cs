@@ -62,6 +62,7 @@ namespace LanguagePatches
         private static string Iversion = "";
         private static string Icredits = "";
         private static string cachePath = "";
+        private static string ILangPrefix = "";
         public void Awake()
         {
             // There can only be one config node
@@ -70,6 +71,7 @@ namespace LanguagePatches
                 Ipath = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("script") + "/" + language.GetValue("lang");
                 Iimages = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("images");
                 Iraw = language.GetValue("path");
+                ILangPrefix = language.GetValue("lang");
                 ImustRestart = language.GetNode("Settings").GetValue("mustRestart");
                 IfullLang = language.GetNode("Settings").GetValue("fullLang");
                 IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
@@ -135,6 +137,11 @@ namespace LanguagePatches
         {
             get { return IfullLangEN; }
             set { IfullLangEN = value; }
+        }
+        public static string langPrefix
+        {
+            get { return ILangPrefix; }
+            set { ILangPrefix = value; }
         }
     }
 }
