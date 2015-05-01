@@ -47,15 +47,14 @@ namespace LanguagePatches
                 GUI.skin = HighLogic.Skin;
                 if (toggle)
                 {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " " + Loader.fullLang + " (" + Loader.mustRestart + ")");
+                    toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " " + Loader.fullLang + " (" + Loader.mustRestart + ")");
                 }
                 else
                 {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 100, 0, 100, 20), toggle, " English (Needs restart)");
+                    toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " English (Needs restart)");
                 }
-                GUI.Label(new Rect(10,10,200,120), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
+                GUI.Label(new Rect(10,10,200,200), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
                 Loader.writeCache(toggle);
-            
         }
     }
 }
