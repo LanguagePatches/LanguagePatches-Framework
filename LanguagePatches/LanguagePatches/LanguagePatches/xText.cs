@@ -131,8 +131,15 @@ namespace LanguagePatches
             {
                 xText.LoadDict();
             }
-            str = (!xText.dict_Field.ContainsKey(value) ? value : xText.dict_Field[value]);
-            return str;
+            if (dict_Field == null)
+            {
+                return value;
+            }
+            else
+            {
+                str = (!xText.dict_Field.ContainsKey(value) ? value : xText.dict_Field[value]);
+                return str;
+            }
         }
     }
 }

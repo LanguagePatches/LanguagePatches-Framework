@@ -55,17 +55,6 @@ namespace LanguagePatches
                     fontIfy = false;
                 }
 
-                if (fontIfy)
-                {
-                    if (xmlDocument.DocumentElement.HasAttribute("size"))
-                    {
-                        xFont.FontIfy(SSGT, float.Parse(xmlDocument.DocumentElement.GetAttribute("size")));
-                    }
-                    else
-                    {
-                        xFont.FontIfy(SSGT);
-                    }
-                }
                 foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
                 {
                     switch (child.GetAttribute("building"))
@@ -76,28 +65,28 @@ namespace LanguagePatches
                         case "SPH":
                             sph = child.InnerText;
                             break;
-                        case "Astronaut Complex":
+                        case "AstronautComplex":
                             ac = child.InnerText;
                             break;
-                        case "Tracking Station":
+                        case "TrackingStation":
                             ts = child.InnerText;
                             break;
-                        case "Administration Building":
+                        case "AdministrationBuilding":
                             ab = child.InnerText;
                             break;
                         case "Runway":
                             rwy = child.InnerText;
                             break;
-                        case "Flag Pole":
+                        case "FlagPole":
                             flg = child.InnerText;
                             break;
-                        case "Mission Control":
+                        case "MissionControl":
                             mc = child.InnerText;
                             break;
-                        case "R&D":
+                        case "RD":
                             rnd = child.InnerText;
                             break;
-                        case "Launch Pad":
+                        case "LaunchPad":
                             lnchpd = child.InnerText;
                             break;
                     }
@@ -148,6 +137,18 @@ namespace LanguagePatches
                             this.SSGT.text = ab;
                             break;
 
+                    }
+                }
+
+                if (fontIfy)
+                {
+                    if (xmlDocument.DocumentElement.HasAttribute("size"))
+                    {
+                        xFont.FontIfy(SSGT, float.Parse(xmlDocument.DocumentElement.GetAttribute("size")));
+                    }
+                    else
+                    {
+                        xFont.FontIfy(SSGT);
                     }
                 }
             }
