@@ -28,6 +28,7 @@ using System;
 using System.Xml;
 using System.IO;
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace LanguagePatches
@@ -35,103 +36,68 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class xSpaceCenter : MonoBehaviour
     {
+        private string vab, ac, sph, flg, rnd, ts, lpd, rwy, ab, mc;
         private ScreenSafeGUIText SSGT;
-        private string vab = "Vehicle Assembly Building", sph = "Space Plane Hangar", ac = "Astronaut Complex", ts = "Tracking Station", ab = "Administration Building", rwy = "Runway" , mc = "Mission Control", flg = "Flag Pole", rnd = "Research and Development", lnchpd = "Launch Pad";
-
         private void Start()
         {
             this.SSGT = UnityEngine.Object.FindObjectOfType<ScreenSafeGUIText>();
+            if (GameDatabase.Instance.GetConfigNodes(Loader.langPrefix + "SpaceCenter").Count() == 1)
+            {
+                ConfigNode spaceCenterNode = GameDatabase.Instance.GetConfigNodes(Loader.langPrefix + "SpaceCenter")[0];
+                vab = spaceCenterNode.GetValue("VAB");
+                sph = spaceCenterNode.GetValue("SPH");
+                ac = spaceCenterNode.GetValue("astronautComplex");
+                flg = spaceCenterNode.GetValue("flagPole");
+                rnd = spaceCenterNode.GetValue("RnD");
+                ts = spaceCenterNode.GetValue("trackingStation");
+                lpd = spaceCenterNode.GetValue("launchPad");
+                rwy = spaceCenterNode.GetValue("runway");
+                ab = spaceCenterNode.GetValue("administrationBuilding");
+                mc = spaceCenterNode.GetValue("missionControl");
+            }
+            else
+            {
+                // If we have multiple nodes, kill us
+                Destroy(this);
+            }
         }
 
         private void Update()
         {
-            if (Loader.loadCache && File.Exists(Loader.path + "SpaceCenter.xml"))
-            {            
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(Loader.path + "SpaceCenter.xml");
-                foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
+            if (Loader.loadCache && (this.SSGT.text != null || this.SSGT.text != ""))
+            {
+                switch (this.SSGT.text)
                 {
-                    switch (child.GetAttribute("building"))
-                    {
-                        case "VAB":
-                            vab = child.InnerText;
-                            break;
-                        case "SPH":
-                            sph = child.InnerText;
-                            break;
-                        case "Astronaut Complex":
-                            ac = child.InnerText;
-                            break;
-                        case "Tracking Station":
-                            ts = child.InnerText;
-                            break;
-                        case "Administration Building":
-                            ab = child.InnerText;
-                            break;
-                        case "Runway":
-                            rwy = child.InnerText;
-                            break;
-                        case "Flag Pole":
-                            flg = child.InnerText;
-                            break;
-                        case "Mission Control":
-                            mc = child.InnerText;
-                            break;
-                        case "R&D":
-                            rnd = child.InnerText;
-                            break;
-                        case "Launch Pad":
-                            lnchpd = child.InnerText;
-                            break;
-                    }
-                }
-
-
-                if ((this.SSGT.text != "") || (this.SSGT.text != null))
-                {
-                    switch (this.SSGT.text)
-                    {
-                        case "Vehicle Assembly Building":
-                            this.SSGT.text = vab;
-                            break;
-
-                        case "Astronaut Complex":
-                            this.SSGT.text = ac;
-                            break;
-
-                        case "Spaceplane Hangar":
-                            this.SSGT.text = sph;
-                            break;
-
-                        case "Flag Pole":
-                            this.SSGT.text = flg;
-                            break;
-
-                        case "Research and Development":
-                            this.SSGT.text = rnd;
-                            break;
-
-                        case "Tracking Station":
-                            this.SSGT.text = ts;
-                            break;
-
-                        case "Launch Pad":
-                            this.SSGT.text = lnchpd;
-                            break;
-
-                        case "Runway":
-                            this.SSGT.text = rwy;
-                            break;
-
-                        case "Mission Control":
-                            this.SSGT.text = mc;
-                            break;
-
-                        case "Administration Building":
-                            this.SSGT.text = ab;
-                            break;
-
-                    }
+                    case "Vehicle Assembly Building":
+                        this.SSGT.text = vab;
+                        break;
+                    case "Spaceplane Hangar":
+                        this.SSGT.text = sph;
+                        break;
+                    case "Astronaut Complex":
+                        this.SSGT.text = ac;
+                        break;
+                    case "Flag Pole":
+                        this.SSGT.text = flg;
+                        break;
+                    case "Research and Development":
+                        this.SSGT.text = rnd;
+                        break;
+                    case "Tracking Station":
+                        this.SSGT.text = ts;
+                        break;
+                    case "Launch Pad":
+                        this.SSGT.text = lpd;
+                        break;
+                    case "Runway":
+                        this.SSGT.text = rwy;
+                        break;
+                    case "Administration Building":
+                        this.SSGT.text = ab;
+                        break;
+                    case "Mission Control":
+                        this.SSGT.text = mc;
+                        break;
                 }
             }
         }
