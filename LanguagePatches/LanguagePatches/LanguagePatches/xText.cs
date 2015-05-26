@@ -24,8 +24,13 @@
  * https://kerbalspaceprogram.com
  */
 
+using System;
+using System.Web;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
+using System.Text.RegularExpressions;
 using System.Xml;
 using UnityEngine;
 
@@ -37,10 +42,9 @@ namespace LanguagePatches
         private string directory = AssemblyLoader.GetPathByType(typeof(xText)).Replace("PluginData/LanguagePatches", "Log");
 
         private static Dictionary<string, string> dict_Field;
-        private List<SpriteText> patched = new List<SpriteText>();
-        private List<SpriteTextRich> patchedRich = new List<SpriteTextRich>();
+        private Type[] types = new Type[] { typeof(SpriteText), typeof(SpriteTextRich), typeof(TextMesh), typeof(GUIContent) };
+        private Dictionary<Type, IList> patchedText = new Dictionary<Type, IList>();
         TextWriter logger;
-        bool[] finish = new bool[2];
 
         public void Awake()
         {
@@ -50,6 +54,12 @@ namespace LanguagePatches
                 LoadDict();
                 Directory.CreateDirectory(directory);
                 logger = new StreamWriter(Path.Combine(directory, HighLogic.LoadedScene.ToString() + ".log"));
+
+                // Create storing lists
+                foreach (Type type in types)
+                {
+                    patchedText.Add(type, createList(type));
+                }
             }
         }
 
@@ -58,55 +68,59 @@ namespace LanguagePatches
             if (Loader.loadCache)
             {
                 // Patch all SpriteTexts
-                if (patched.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
+                if (patchedText[typeof(SpriteText)].Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
                 {
                     // Go through all objects
                     foreach (SpriteText txt in Resources.FindObjectsOfTypeAll(typeof(SpriteText)))
                     {
-                        if (!patched.Contains(txt))
+                        if (!patchedText[typeof(SpriteText)].Contains(txt))
                         {
-                            logger.WriteLine("[SpriteText] " + txt.Text);
+                            logger.WriteLine("[SpriteText] " + Escape(txt.Text));
                             txt.Text = xText.Trans(txt.Text);
                             xFont.FontIfy(txt);
-                            patched.Add(txt);
+                            patchedText[typeof(SpriteText)].Add(txt);
                             txt.UpdateMesh();
 
-                        }
+                        } 
                     }
-                }
-                else
-                {
-                    finish[0] = true;
                 }
 
                 // Patch all SpriteTextRichs
-                if (patchedRich.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+                if (patchedText[typeof(SpriteTextRich)].Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
                 {
                     // Go through all objects
                     foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
                     {
-                        if (!patchedRich.Contains(txt))
+                        if (!patchedText[typeof(SpriteTextRich)].Contains(txt))
                         {
-                            logger.WriteLine("[SpriteTextRich] " + txt.Text);
+                            logger.WriteLine("[SpriteTextRich] " + Escape(txt.Text));
                             txt.Text = xText.Trans(txt.text);
                             xFont.FontIfy(txt);
-                            patchedRich.Add(txt);
+                            patchedText[typeof(SpriteTextRich)].Add(txt);
                             txt.UpdateMesh();
                         }
                     }
                 }
-                else
-                {
-                    finish[1] = true;
-                }
 
-                if (finish[0] && finish[1])
+                // Patch all SpriteTextRichs
+                if (patchedText[typeof(TextMesh)].Count < Resources.FindObjectsOfTypeAll(typeof(TextMesh)).Length)
                 {
-                    logger.Flush();
+                    // Go through all objects
+                    foreach (TextMesh txt in Resources.FindObjectsOfTypeAll(typeof(TextMesh)))
+                    {
+                        if (!patchedText[typeof(TextMesh)].Contains(txt))
+                        {
+                            logger.WriteLine("[TextMesh] " + Escape(txt.text));
+                            txt.text = xText.Trans(txt.text);
+                            xFont.FontIfy(txt);
+                            patchedText[typeof(TextMesh)].Add(txt);
+                        }
+                    }
                 }
+                
+                logger.Flush();
             }
         }
-
 
         public static void LoadDict()
         {
@@ -118,7 +132,7 @@ namespace LanguagePatches
                 xmlDocument.Load(Loader.path + "Text.xml");
                 foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
                 {
-                    xText.dict_Field[childNode.GetAttribute("name")] = ((XmlCDataSection)childNode.FirstChild).InnerText;
+                    xText.dict_Field[((XmlCDataSection)childNode.FirstChild.FirstChild).InnerText] = ((XmlCDataSection)childNode.LastChild.FirstChild).InnerText;
                 }
             }
         }
@@ -137,9 +151,28 @@ namespace LanguagePatches
             }
             else
             {
-                str = (!xText.dict_Field.ContainsKey(value) ? value : xText.dict_Field[value]);
+                str = (!xText.dict_Field.ContainsKey(Escape(value))) ? value : Unescape(xText.dict_Field[Escape(value)]);
+                Debug.Log(str + " - " + xText.dict_Field.ContainsKey(Escape(value)));
                 return str;
             }
+        }
+
+        public IList createList(Type myType)
+        {
+            Type genericListType = typeof(List<>).MakeGenericType(myType);
+            return (IList)Activator.CreateInstance(genericListType);
+        }
+
+        public static string Escape(string s)
+        {
+            s = s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
+            return s;
+        }
+
+        public static string Unescape(string s)
+        {
+            s = s.Replace(@"\n", "\n").Replace(@"\r", "\r").Replace(@"\t", "\t");
+            return s;
         }
     }
 }
