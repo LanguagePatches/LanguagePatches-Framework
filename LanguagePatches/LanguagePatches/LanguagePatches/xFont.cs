@@ -34,67 +34,41 @@ namespace LanguagePatches
 {
     public static class xFont
     {
-        private static AssetBundle asset;
-
-        private static Dictionary<string, Font> fonts = null;
-        private static Dictionary<string, KeyValuePair<TextAsset, Material>> spriteFonts = null;
+        private static Dictionary<string, string> fonts = null;
 
         public static void FontIfy(TextMesh mesh, float size = -1)
         {
-            if (fonts == null)
-                GetConfig();
-
-            if (fonts != null && fonts.ContainsKey(mesh.font.name)) 
-            {
-                Font fnt = fonts[mesh.font.name];
+                Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font; 
                 Color o = mesh.renderer.sharedMaterial.color;
-                mesh.renderer.sharedMaterial = fnt.material;
+                mesh.renderer.sharedMaterial = Arial.material;
                 mesh.renderer.sharedMaterial.color = o;
-                mesh.font = fnt;
+                mesh.font = Arial;
                 mesh.richText = true;
                 if (size != -1)
                 {
                     mesh.text = "<size=" + size.ToString() + ">" + mesh.text + "</size>";
                 }
-            }
         }
-
-
 
         public static void FontIfy(ScreenSafeGUIText text, float size = -1)
         {
-            if (fonts == null)
-                GetConfig();
-
-            if (fonts != null && fonts.ContainsKey(text.textStyle.font.name))
+            Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            text.textStyle.font = Arial;
+            text.textStyle.richText = true;
+            if (size != -1)
             {
-                Font fnt = fonts[text.textStyle.font.name];
-                text.textStyle.font = fnt;
-                text.textStyle.richText = true;
-                if (size != -1)
-                {
-                    text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
-                }
+                text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
             }
-
         }
 
         public static void FontIfy(SpriteText text)
         {
-            if (spriteFonts.ContainsKey(text.font.name))
-            {
-                KeyValuePair<TextAsset, Material> kv = spriteFonts[text.font.name];
-                SpriteFont f = new SpriteFont(kv.Key);
-                text.SetFont(f, kv.Value);
-            }
+
         }
 
         public static void FontIfy(SpriteTextRich text)
         {
-            for (int i = 0; i < text.font.fonts.Length; i++)
-            {
-                Debug.Log("SFNT: " + text.font.fonts[i].fontText.name + " - " + text.text);
-            }
+
         }
 
         private static void GetConfig()
@@ -103,27 +77,11 @@ namespace LanguagePatches
             if (File.Exists(Loader.path + "Font.xml"))
             {
                 XmlDocument xmlDocument = new XmlDocument();
+                fonts = new Dictionary<string, string>();
                 xmlDocument.Load(Loader.path + "Font.xml");
-                asset = new WWW("file:///" + Directory.GetCurrentDirectory() + "/" + Loader.rawPath + "/" + xmlDocument.DocumentElement.GetAttribute("asset") + ".unity3d").assetBundle;
-                fonts = new Dictionary<string, Font>();
-                spriteFonts = new Dictionary<string, KeyValuePair<TextAsset, Material>>();
                 foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
                 {
-                    if (childNode.GetAttribute("type") == "font")
-                    {
-                        fonts.Add(childNode.GetAttribute("name"), asset.Load(childNode.InnerText, typeof(Font)) as Font);
-                    }
-                    else if (childNode.GetAttribute("type") == "spriteFont")
-                    {
-                        TextAsset key = asset.Load(childNode.InnerText, typeof(TextAsset)) as TextAsset;
-                        Material value = new Material(Shader.Find("Sprite/Vertex Colored"));
-                        Texture2D tex = asset.Load(childNode.InnerText, typeof(Texture2D)) as Texture2D;
-                        value.SetTexture("_MainTex", tex);
-                        Material.DontDestroyOnLoad(value);
-
-                        KeyValuePair<TextAsset, Material> kv = new KeyValuePair<TextAsset, Material>(key, value);
-                        spriteFonts.Add(childNode.GetAttribute("name"), kv);
-                    }
+                    fonts[childNode.GetAttribute("name")] = childNode.InnerText;
                 }
             }
         }
