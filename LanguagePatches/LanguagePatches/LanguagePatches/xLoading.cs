@@ -98,4 +98,21 @@ namespace LanguagePatches
             }
         }
     }
+    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
+    public class LoadingText : MonoBehaviour
+    {
+        void Update()
+        {
+            TextMesh[] textMeshes = GameObject.FindObjectsOfType<TextMesh>();
+            foreach (TextMesh TM in textMeshes)
+            {
+                if (TM.text.Contains("Loading..."))
+                {
+                    TM.text = "<size=25>" + Loader.Loading + "</size>";
+                    // Changing font (both this following way or using xFont.fontIfy(TextMesh mesh, float size)) makes the text not to load! :
+                    // TM.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                }
+            }
+        }
+    }
 }
