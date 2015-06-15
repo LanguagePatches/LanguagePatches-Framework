@@ -30,7 +30,7 @@ using UnityEngine;
 
 namespace LanguagePatches
 {
-    [KSPAddon(KSPAddon.Startup.Instantly, false)]
+    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
     public class Loader : MonoBehaviour
     {
         public static void writeCache(bool toggle)
@@ -62,6 +62,7 @@ namespace LanguagePatches
         private static string Iversion = "";
         private static string Icredits = "";
         private static string cachePath = "";
+        public static string Loading { get; private set; }
         private static string ILangPrefix = "";
         public void Awake()
         {
@@ -77,6 +78,7 @@ namespace LanguagePatches
                 IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
                 Iversion = language.GetNode("Settings").GetValue("version");
                 Icredits = language.GetNode("Settings").GetValue("credits");
+                Loading = language.GetNode("AdditionalTexts").GetValue("loading") + "...";
 
                 Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/" + Iraw + "/PluginData");
                 cachePath = Iraw + "/PluginData/CACHE";
