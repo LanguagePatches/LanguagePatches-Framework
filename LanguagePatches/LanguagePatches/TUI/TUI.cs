@@ -652,7 +652,7 @@ namespace UnityEngine
             // Log Content
             if (!logged.Contains(text))
             {
-                log.WriteLine("[GUIText] " + text);
+                log.WriteLine("[GUIText] " + xText.Escape(text));
                 log.Flush();
                 logged.Add(text);
             }
@@ -674,7 +674,7 @@ namespace UnityEngine
             // Log Content
             if (!logged.Contains(content.text) && !logged.Contains(content.tooltip))
             {
-                log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
+                log.WriteLine("[GUIContent] " + xText.Escape(content.text) + " (Tooltip: " + xText.Escape(content.tooltip) + ")");
                 log.Flush();
                 logged.Add(content.text);
                 logged.Add(content.tooltip);

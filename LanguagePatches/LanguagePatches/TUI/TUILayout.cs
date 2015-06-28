@@ -577,7 +577,7 @@ namespace UnityEngine
             // Log Content
             if (!logged.Contains(text))
             {
-                TUI.log.WriteLine("[GUIText] " + text);
+                TUI.log.WriteLine("[GUIText] " + xText.Escape(text));
                 TUI.log.Flush();
                 logged.Add(text);
             }
@@ -599,7 +599,7 @@ namespace UnityEngine
             // Log Content
             if (!logged.Contains(content.text) && !logged.Contains(content.tooltip))
             {
-                TUI.log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
+                TUI.log.WriteLine("[GUIContent] " + xText.Escape(content.text) + " (Tooltip: " + xText.Escape(content.tooltip) + ")");
                 TUI.log.Flush();
                 logged.Add(content.text);
                 logged.Add(content.tooltip);
