@@ -28,8 +28,8 @@ using UnityEngine;
 
 namespace LanguagePatches
 {
-    [KSPAddon(KSPAddon.Startup.Settings, false)]
-    public class Setting : MonoBehaviour
+    //[KSPAddon(KSPAddon.Startup.Settings, false)]
+    public class Setting// : MonoBehaviour
     {
         public static bool toggle = true;
 
