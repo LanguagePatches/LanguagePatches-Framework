@@ -24,10 +24,6 @@
  * https://kerbalspaceprogram.com
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using UnityEngine;
 
 namespace LanguagePatches
@@ -39,22 +35,23 @@ namespace LanguagePatches
 
         void Awake()
         {
-            toggle = Loader.loadCache;
+            toggle = Storage.Load;
         }
+
         void OnGUI()
         {
             // Settings window
-                GUI.skin = HighLogic.Skin;
-                if (toggle)
-                {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " " + Loader.fullLang + " (" + Loader.mustRestart + ")");
-                }
-                else
-                {
-                    toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " English (Needs restart)");
-                }
-                GUI.Label(new Rect(10,10,200,200), "Translated in " + Loader.fullLangEnglish + " by " + Loader.credits);
-                Loader.writeCache(toggle);
+            GUI.skin = HighLogic.Skin;
+            if (toggle)
+            {
+                toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " " + Loader.fullLang + " (" + Loader.mustRestart + ")");
+            }
+            else
+            {
+                toggle = GUI.Toggle(new Rect(Screen.width - 250, 0, 200, 50), toggle, " English (Needs restart)");
+            }
+            GUI.Label(new Rect(10, 10, 200, 200), "Translated in " + Loader.fullLangEN + " by " + Loader.credits);
+            Storage.Load = toggle;
         }
     }
 }

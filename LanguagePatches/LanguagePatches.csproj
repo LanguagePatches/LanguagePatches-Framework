@@ -34,29 +34,39 @@
     <RootNamespace>LanguagePatches</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>D:\Benutzer\Dorian\Desktop\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>D:\Benutzer\Dorian\Desktop\Assembly-CSharp-firstpass.dll</HintPath>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\KSP_Data\Managed\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <HintPath>DTS_AddonReferences\System.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>D:\Benutzer\Dorian\Desktop\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>D:\Benutzer\Dorian\Desktop\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LanguagePatches\LanguagePatches\xCredits.cs" />
     <Compile Include="LanguagePatches\LanguagePatches\xSpaceCenter.cs" />
     <Compile Include="LanguagePatches\LanguagePatches\xFont.cs" />
+    <Compile Include="Resources\LaunchHelper.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LaunchHelper.resx</DependentUpon>
+    </Compile>
     <Compile Include="LanguagePatches\Loader.cs" />
     <Compile Include="LanguagePatches\Setting.cs" />
+    <Compile Include="LanguagePatches\Storage.cs" />
+    <Compile Include="LanguagePatches\TUI\TUI.cs" />
+    <Compile Include="LanguagePatches\TUI\TUILayout.cs" />
+    <Compile Include="LanguagePatches\Watchdog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <AutoGen>false</AutoGen>
       <DesignTimeSharedInput>false</DesignTimeSharedInput>
@@ -75,6 +85,15 @@
       <DesignTimeSharedInput>false</DesignTimeSharedInput>
     </Compile>
     <Compile Include="LanguagePatches\LanguagePatches\xText.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\LaunchHelper.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LaunchHelper.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LaunchHelper.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

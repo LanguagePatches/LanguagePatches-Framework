@@ -24,9 +24,10 @@
  * https://kerbalspaceprogram.com
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
+using System.Linq;
 using UnityEngine;
 
 namespace LanguagePatches
@@ -34,91 +35,83 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
     public class xText : MonoBehaviour
     {
-        private string directory = AssemblyLoader.GetPathByType(typeof(xText)).Replace("PluginData/LanguagePatches", "Log");
-
-        private static Dictionary<string, string> dict_Field;
-        private List<SpriteText> patched = new List<SpriteText>();
-        private List<SpriteTextRich> patchedRich = new List<SpriteTextRich>();
-        TextWriter logger;
-        bool[] finish = new bool[2];
+        private List<int> patchedInstances = new List<int>();
+        StreamWriter logger;
 
         public void Awake()
         {
-            if (Loader.loadCache)
-            {
-                // Load SpriteText from .xml
-                LoadDict();
-                Directory.CreateDirectory(directory);
-                logger = new StreamWriter(Path.Combine(directory, HighLogic.LoadedScene.ToString() + ".log"));
-            }
+            logger = new StreamWriter(Storage.directory + "/" + HighLogic.LoadedScene + ".log");
         }
 
         public void Update()
         {
-            if (Loader.loadCache)
+            if (Storage.Load)
             {
                 // Patch all SpriteTexts
-                if (patched.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteText)).Length)
-                {
-                    // Go through all objects
-                    foreach (SpriteText txt in Resources.FindObjectsOfTypeAll(typeof(SpriteText)))
-                    {
-                        if (!patched.Contains(txt))
-                        {
-                            logger.WriteLine("[SpriteText] " + txt.Text);
-                            txt.Text = xText.Trans(txt.Text);
-                            xFont.FontIfy(txt);
-                            patched.Add(txt);
-                            txt.UpdateMesh();
+                Func<SpriteText, bool> predicate = t => !patchedInstances.Contains(t.GetHashCode());
 
-                        }
-                    }
-                }
-                else
+                foreach (SpriteText txt in Resources.FindObjectsOfTypeAll<SpriteText>().Where(predicate))
                 {
-                    finish[0] = true;
+                    Log("[SpriteText] " + Escape(txt.Text));
+                    txt.Text = Trans(txt.Text);
+                    if (Storage.Text.replaceFont)
+                        xFont.ReplaceFont(txt);
+                    patchedInstances.Add(txt.GetInstanceID());
+                    txt.UpdateMesh();
                 }
 
                 // Patch all SpriteTextRichs
-                if (patchedRich.Count < Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)).Length)
+                Func<SpriteTextRich, bool> predicateRich = t => !patchedInstances.Contains(t.GetHashCode());
+
+                foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll<SpriteTextRich>().Where(predicateRich))
                 {
-                    // Go through all objects
-                    foreach (SpriteTextRich txt in Resources.FindObjectsOfTypeAll(typeof(SpriteTextRich)))
+                    Log("[SpriteTextRich] " + Escape(txt.Text));
+                    txt.Text = Trans(txt.Text);
+                    //if (Storage.Text.replaceFont)
+                    //    xFont.ReplaceFont(txt);
+                    patchedInstances.Add(txt.GetInstanceID());
+                    txt.UpdateMesh();
+                }
+
+                // Patch all TextMeshes
+                Func<TextMesh, bool> predicateTM = t => !patchedInstances.Contains(t.GetHashCode());
+
+                foreach (TextMesh txt in Resources.FindObjectsOfTypeAll<TextMesh>().Where(predicateTM))
+                {
+                    //Log("[TextMesh] " + Escape(txt.text));
+                    if (txt.text.Contains("Loading..."))
                     {
-                        if (!patchedRich.Contains(txt))
+                        txt.text = Storage.Loading.loadingString;
+                        if (Storage.Text.replaceFont)
+                            xFont.ReplaceFont(txt);
+                    }
+                    patchedInstances.Add(txt.GetInstanceID());
+                }
+
+                // Patch all BaseEvents
+                Func<BaseEvent, bool> predicateBE = b => !patchedInstances.Contains(b.id);
+
+                if (HighLogic.LoadedScene == GameScenes.FLIGHT)
+                {
+                    foreach (Part part in FlightGlobals.ActiveVessel.Parts)
+                    {
+                        foreach (BaseEvent e in part.Events.Where(predicateBE))
                         {
-                            logger.WriteLine("[SpriteTextRich] " + txt.Text);
-                            txt.Text = xText.Trans(txt.text);
-                            xFont.FontIfy(txt);
-                            patchedRich.Add(txt);
-                            txt.UpdateMesh();
+                            Log("[BaseEvent]: " + Escape(e.GUIName));
+                            e.guiName = Trans(e.GUIName);
+                            patchedInstances.Add(e.id);
+                        }
+
+                        foreach (PartModule partModule in part.Modules)
+                        {
+                            foreach (BaseEvent e in partModule.Events.Where(predicateBE))
+                            {
+                                Log("[BaseEvent]: " + Escape(e.GUIName));
+                                e.guiName = Trans(e.GUIName);
+                                patchedInstances.Add(e.id);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    finish[1] = true;
-                }
-
-                if (finish[0] && finish[1])
-                {
-                    logger.Flush();
-                }
-            }
-        }
-
-
-        public static void LoadDict()
-        {
-            // Does the config exists?
-            if (File.Exists(Loader.path + "Text.xml"))
-            {
-                XmlDocument xmlDocument = new XmlDocument();
-                xText.dict_Field = new Dictionary<string, string>();
-                xmlDocument.Load(Loader.path + "Text.xml");
-                foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
-                {
-                    xText.dict_Field[childNode.GetAttribute("name")] = ((XmlCDataSection)childNode.FirstChild).InnerText;
                 }
             }
         }
@@ -126,20 +119,37 @@ namespace LanguagePatches
         // Translate a SpriteText
         public static string Trans(string value)
         {
-            string str;
-            if (xText.dict_Field == null)
+            // Check for Loading-String
+            if (value == "Loading...")
             {
-                xText.LoadDict();
+                value = Storage.Loading.loadingString;
             }
-            if (dict_Field == null)
+
+            // Translate Content
+            if (Storage.Text.texts.Count > 0)
             {
-                return value;
+                value = (!Storage.Text.texts.ContainsKey(Escape(value))) ? value : Unescape(Storage.Text.texts[Escape(value)]);
             }
-            else
-            {
-                str = (!xText.dict_Field.ContainsKey(value) ? value : xText.dict_Field[value]);
-                return str;
-            }
+
+            // Return Content
+            return value;
+        }
+
+        public static string Escape(string s)
+        {
+            s = s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
+            return s;
+        }
+
+        public static string Unescape(string s)
+        {
+            s = s.Replace(@"\n", "\n").Replace(@"\r", "\r").Replace(@"\t", "\t");
+            return s;
+        }
+
+        private void Log(object o)
+        {
+            logger.WriteLine(o);
         }
     }
 }

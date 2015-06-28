@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
  * 
@@ -24,38 +24,41 @@
  * https://kerbalspaceprogram.com
  */
 
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System;
 using System.Reflection;
 using UnityEngine;
 
 namespace LanguagePatches
 {
-    [KSPAddon(KSPAddon.Startup.Instantly, true)]
-    public class xLoading : MonoBehaviour
+    [KSPAddon(KSPAddon.Startup.Instantly, false)]
+    public class Watchdog : MonoBehaviour
     {
-        public void Awake()
+        private static string assemblyLocation = "";
+
+        public void Start()
         {
-            if (Storage.Load)
+            if (Loader.watchdogActive)
             {
-                // Hijack the Game's prefab and replace their LoadingTips
-                FieldInfo field = LoadingScreen.Instance.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic).Where(f => f.FieldType == typeof(List<LoadingScreen.LoadingScreenState>)).First();
-                List<LoadingScreen.LoadingScreenState> states = field.GetValue(LoadingScreen.Instance) as List<LoadingScreen.LoadingScreenState>;
-
-                // Loop through all ScreenStates
-                foreach (LoadingScreen.LoadingScreenState state in states)
-                {
-                    state.tips = Storage.Loading.tips.ToArray();
-                }
-
-                // Overwrite the List with the new one
-                field.SetValue(LoadingScreen.Instance, states);
-
-                TextMesh text = TextMesh.FindObjectOfType<TextMesh>();
-                if (Storage.Loading.replaceFont)
-                    xFont.ReplaceFont(text, Storage.Loading.size);
+                // Create an Event Handler for the crash of the Application
+                assemblyLocation = Assembly.GetAssembly(typeof(Game)).Location;
+                DontDestroyOnLoad(this);
             }
-            Destroy(this); // Don't hang around..
+            else
+            {
+                Destroy(this);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            // When the Process exits, delete the modified .dll and restore the original one
+            if (Loader.watchdogActive)
+            {
+                UnityEngine.Debug.Log("WATCHDOG!");
+                File.Delete(assemblyLocation);
+                File.Move(assemblyLocation.Replace(".dll", ".old"), assemblyLocation);
+            }
         }
     }
 }

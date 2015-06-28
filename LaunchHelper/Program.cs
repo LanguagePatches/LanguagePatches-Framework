@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
  * 
@@ -24,34 +24,31 @@
  * https://kerbalspaceprogram.com
  */
 
-using UnityEngine;
+using System;
+using System.Diagnostics;
+using System.IO;
 
-namespace LanguagePatches
+namespace LaunchHelper
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    public class xImage : MonoBehaviour
+    // Restart-Helper for the LanguagePatches-Framework
+    public class LaunchHelper
     {
-        private bool IsOver = false;
+        public string[] CommandLineArgs = new string[] { };
 
-        private void Update()
+        public LaunchHelper()
         {
-            if (Storage.Load && !IsOver && !Storage.Image.levels.Contains(Application.loadedLevel))
-            {
-                // Apply the new Textures
-                Storage.Image.levels.Add(Application.loadedLevel);
-                Material[] materials = Resources.FindObjectsOfTypeAll<Material>();
-                foreach (Material material in materials)
-                {
-                    Texture texture = material.mainTexture;
-                    if (texture != null && Storage.Image.textures.ContainsKey(texture.name))
-                    {
-                        material.SetTexture("_MainTex", Storage.Image.textures[texture.name]);
-                        Material.DontDestroyOnLoad(material);
-                    }
-                }
-                Destroy(this); // Don't hang around...
-            }
+
+        }
+
+        public void Load()
+        {
+            // Create the Process Informations
+            ProcessStartInfo info = new ProcessStartInfo("KSP.exe");
+            info.CreateNoWindow = false;
+            info.Arguments = String.Join(" ", CommandLineArgs);
+
+            // And start the Process
+            Process p = Process.Start(info);
         }
     }
 }
-

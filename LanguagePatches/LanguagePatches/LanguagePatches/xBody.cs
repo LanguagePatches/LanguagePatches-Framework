@@ -24,10 +24,8 @@
  * https://kerbalspaceprogram.com
  */
 
-using System.Collections.Generic;
-using System.IO;
+using System;
 using System.Linq;
-using System.Xml;
 using UnityEngine;
 
 namespace LanguagePatches
@@ -35,47 +33,20 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.PSystemSpawn, false)]
     public class PlanetShifter : MonoBehaviour
     {
-        public Dictionary<string, string> LoadConfig()
+        public void Start()
         {
-            if (File.Exists(Loader.path + "Body.xml"))
+            if (Storage.Body.bodyDescription.Count > 0 && Storage.Load)
             {
-                var body = new Dictionary<string, string>();
+                // Function that returns every patchable body
+                Func<CelestialBody, bool> predicate = cb => Storage.Body.bodyDescription.Keys.Contains(cb.gameObject.name);
 
-                // Load descriptions from .xml
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(Loader.path + "Body.xml");
-                foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
+                // Scan the solar system and replace descriptions
+                foreach (CelestialBody cb in FlightGlobals.Bodies.Where(predicate))
                 {
-                    body[child.Name] = child.InnerText;
-                }
-
-                return body;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        void Start()
-        {
-            if (Loader.loadCache)
-            { 
-                var body = LoadConfig();
-
-                if (body != null)
-                {
-                    // Scan the solar system and replace descriptions
-                    foreach (CelestialBody cb in FlightGlobals.Bodies)
-                    {
-                        if (body.Keys.Contains(cb.gameObject.name))
-                        {
-                            cb.bodyDescription = body[cb.gameObject.name];
-                            cb.CBUpdate();
-                        }
-                    }
+                    cb.bodyDescription = Storage.Body.bodyDescription[cb.gameObject.name];
                 }
             }
         }
     }
 }
+

@@ -24,64 +24,84 @@
  * https://kerbalspaceprogram.com
  */
 
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Xml;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace LanguagePatches
 {
     public static class xFont
     {
-        private static Dictionary<string, string> fonts = null;
-
-        public static void FontIfy(TextMesh mesh, float size = -1)
+        /// <summary>
+        /// Patches the Font of a TextMesh
+        /// </summary>
+        /// <param name="mesh">The Mesh that we should patch</param>
+        /// <param name="size">[Optional] New text-size of the mesh</param>
+        public static void ReplaceFont(TextMesh mesh, [Optional][DefaultParameterValue(-1)] float size)
         {
-                Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font; 
+            if (Storage.Font.trueTypeFonts != null && Storage.Font.trueTypeFonts.ContainsKey(mesh.font.name)) 
+            {
+                Font fnt = Storage.Font.trueTypeFonts[mesh.font.name];
                 Color o = mesh.renderer.sharedMaterial.color;
-                mesh.renderer.sharedMaterial = Arial.material;
+                mesh.renderer.sharedMaterial = fnt.material;
                 mesh.renderer.sharedMaterial.color = o;
-                mesh.font = Arial;
+                mesh.font = fnt;
                 mesh.richText = true;
                 if (size != -1)
                 {
                     mesh.text = "<size=" + size.ToString() + ">" + mesh.text + "</size>";
                 }
-        }
-
-        public static void FontIfy(ScreenSafeGUIText text, float size = -1)
-        {
-            Font Arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-            text.textStyle.font = Arial;
-            text.textStyle.richText = true;
-            if (size != -1)
-            {
-                text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
             }
         }
 
-        public static void FontIfy(SpriteText text)
+        /// <summary>
+        /// Patches the Font of a ScreenSafeGUIText
+        /// </summary>
+        /// <param name="text">The SSUI-Text that we should patch</param>
+        /// <param name="size">[Optional] New text-size of the mesh</param>
+        public static void ReplaceFont(ScreenSafeGUIText text, [Optional][DefaultParameterValue(-1)] float size)
         {
-
-        }
-
-        public static void FontIfy(SpriteTextRich text)
-        {
-
-        }
-
-        private static void GetConfig()
-        {
-            // Does the config exists?
-            if (File.Exists(Loader.path + "Font.xml"))
+            if (Storage.Font.trueTypeFonts != null && Storage.Font.trueTypeFonts.ContainsKey(text.textStyle.font.name))
             {
-                XmlDocument xmlDocument = new XmlDocument();
-                fonts = new Dictionary<string, string>();
-                xmlDocument.Load(Loader.path + "Font.xml");
-                foreach (XmlElement childNode in xmlDocument.DocumentElement.ChildNodes)
+                Font fnt = Storage.Font.trueTypeFonts[text.textStyle.font.name];
+                text.textStyle.font = fnt;
+                text.textStyle.richText = true;
+                if (size != -1)
                 {
-                    fonts[childNode.GetAttribute("name")] = childNode.InnerText;
+                    text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Patches the Font of a SpriteText
+        /// </summary>
+        /// <param name="text">The SpriteText that we should patch</param>
+        public static void ReplaceFont(SpriteText text)
+        {
+            if (Storage.Font.spriteFont.ContainsKey(text.font.name))
+            {
+                Debug.Log(true);
+                KeyValuePair<TextAsset, Material> font = Storage.Font.spriteFont[text.font.name];
+                text.SetFont(font.Key, font.Value);
+            }
+        }
+
+        /// <summary>
+        /// Patches the Font of a SpriteTextRich
+        /// </summary>
+        /// <param name="text">The SpriteTextRich that we should patch</param>
+        public static void ReplaceFont(SpriteTextRich text)
+        {
+            foreach (SpriteFontMultiple.SpriteFontInstance font in text.font.fonts)
+            {
+                if (Storage.Font.spriteFont.ContainsKey(font.name))
+                {
+                    KeyValuePair<TextAsset, Material> fontKV = Storage.Font.spriteFont[font.name];
+                    font.fontText = fontKV.Key;
+                    font.SpriteFont.Load(fontKV.Key);
+                    font.material = fontKV.Value;
                 }
             }
         }

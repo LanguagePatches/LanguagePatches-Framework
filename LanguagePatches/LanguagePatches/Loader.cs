@@ -27,65 +27,59 @@
 using System.Linq;
 using System.IO;
 using UnityEngine;
+using System.Reflection;
 
 namespace LanguagePatches
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
+    [KSPAddon(KSPAddon.Startup.Instantly, false)]
     public class Loader : MonoBehaviour
     {
-        public static void writeCache(bool toggle)
-        {
-            if (File.Exists(cachePath)) { File.Delete(cachePath); }
-            TextWriter cache = new StreamWriter(cachePath);
-            cache.Write(toggle);
-            cache.Close();
-        }
-        public static bool loadCache
-        {
-            get
-            {
-                bool status = false;
-                StreamReader cacheReader = new StreamReader(cachePath);
-                string line = cacheReader.ReadLine();
-                cacheReader.Close();
-                if (bool.Parse(line) != status) status = bool.Parse(line);
-                return status;
-            }
-        }
         // Multiple paths
-        private static string Ipath = "";
-        private static string Iimages = "";
-        private static string Iraw = "";
-        private static string ImustRestart = "";
-        private static string IfullLang = "";
-        private static string IfullLangEN = "";
-        private static string Iversion = "";
-        private static string Icredits = "";
-        private static string cachePath = "";
-        public static string Loading { get; private set; }
-        private static string ILangPrefix = "";
+        public static string path = "";
+        public static string images = "";
+        public static string rawPath = "";
+        public static string mustRestart = "";
+        public static string fullLang = "";
+        public static string fullLangEN = "";
+        public static string version = "";
+        public static string credits = "";
+        public static string LangPrefix = "";
+        public static string assetPath = "";
+        public static bool watchdogActive = false;
+
         public void Awake()
         {
             // There can only be one config node
-            if (GameDatabase.Instance.GetConfigNodes("LanguagePatches").Count() == 1) {
+            if (GameDatabase.Instance.GetConfigNodes("LanguagePatches").Count() == 1)
+            {
+                // Get all the variables
                 ConfigNode language = GameDatabase.Instance.GetConfigNodes("LanguagePatches")[0];
-                Ipath = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("script") + "/" + language.GetValue("lang");
-                Iimages = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("images");
-                Iraw = language.GetValue("path");
-                ILangPrefix = language.GetValue("lang");
-                ImustRestart = language.GetNode("Settings").GetValue("mustRestart");
-                IfullLang = language.GetNode("Settings").GetValue("fullLang");
-                IfullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
-                Iversion = language.GetNode("Settings").GetValue("version");
-                Icredits = language.GetNode("Settings").GetValue("credits");
-                Loading = language.GetNode("AdditionalTexts").GetValue("loading") + "...";
+                path = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("script") + "/" + language.GetValue("lang");
+                images = language.GetValue("path") + "/" + language.GetNode("Root").GetValue("images");
+                rawPath = language.GetValue("path");
+                LangPrefix = language.GetValue("lang");
+                mustRestart = language.GetNode("Settings").GetValue("mustRestart");
+                fullLang = language.GetNode("Settings").GetValue("fullLang");
+                fullLangEN = language.GetNode("Settings").GetValue("fullLangEnglish");
+                version = language.GetNode("Settings").GetValue("version");
+                credits = language.GetNode("Settings").GetValue("credits");
 
-                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/" + Iraw + "/PluginData");
-                cachePath = Iraw + "/PluginData/CACHE";
-                if (!File.Exists(cachePath))
+                // Create the CACHE file
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/" + rawPath + "/PluginData");
+                Storage.cachePath = rawPath + "/PluginData/CACHE";
+                if (!File.Exists(Storage.cachePath))
                 {
-                    writeCache(true);
+                    Storage.Load = true;
                 }
+
+                // Get the path for the AssetFile
+                assetPath = language.GetNode("Root").GetValue("fontAsset");
+
+                // Get the Lock-File for the Cecil-Patcher
+                watchdogActive = File.Exists(Assembly.GetAssembly(typeof(Game)).Location.Replace(".dll", ".old"));
+
+                // Load the configuration
+                Storage.LoadConfiguration();
             }
             else
             {
@@ -93,57 +87,6 @@ namespace LanguagePatches
                 Destroy(this);
             }
             
-        }
-
-        public static string path
-        {
-            get { return Ipath; }
-            set { Ipath = value; }
-        }
-
-        public static string images
-        {
-            get { return Iimages; }
-            set { Iimages = value; }
-        }
-
-        public static string rawPath
-        {
-            get { return Iraw; }
-            set { Iraw = value; }
-        }
-
-        public static string mustRestart
-        {
-            get { return ImustRestart; }
-            set { ImustRestart = value; }
-        }
-
-        public static string fullLang
-        {
-            get { return IfullLang; }
-            set { IfullLang = value; }
-        }
-        
-        public static string credits
-        {
-            get { return Icredits; }
-            set { Icredits = value; }
-        }
-        public static string version
-        {
-            get { return Iversion; }
-            set { Iversion = value; }
-        }
-        public static string fullLangEnglish
-        {
-            get { return IfullLangEN; }
-            set { IfullLangEN = value; }
-        }
-        public static string langPrefix
-        {
-            get { return ILangPrefix; }
-            set { ILangPrefix = value; }
         }
     }
 }

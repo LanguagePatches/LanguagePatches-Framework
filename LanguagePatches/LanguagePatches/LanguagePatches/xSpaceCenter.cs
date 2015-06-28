@@ -24,133 +24,30 @@
  * https://kerbalspaceprogram.com
  */
 
-using System;
-using System.Xml;
-using System.IO;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace LanguagePatches
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class xSpaceCenter : MonoBehaviour
     {
-        private ScreenSafeGUIText SSGT;
-        private string vab = "Vehicle Assembly Building", sph = "Space Plane Hangar", ac = "Astronaut Complex", ts = "Tracking Station", ab = "Administration Building", rwy = "Runway" , mc = "Mission Control", flg = "Flag Pole", rnd = "Research and Development", lnchpd = "Launch Pad";
+        ScreenSafeGUIText SSGT;
 
         private void Start()
         {
-            this.SSGT = UnityEngine.Object.FindObjectOfType<ScreenSafeGUIText>();
+            SSGT = UnityEngine.Object.FindObjectOfType<ScreenSafeGUIText>();
+
+            if (Storage.SpaceCenter.replaceFont)
+            {
+                xFont.ReplaceFont(SSGT, Storage.SpaceCenter.size);
+            }
         }
 
         private void Update()
         {
-            if (Loader.loadCache && File.Exists(Loader.path + "SpaceCenter.xml"))
-            {            
-                XmlDocument xmlDocument = new XmlDocument();
-                xmlDocument.Load(Loader.path + "SpaceCenter.xml");
-                bool fontIfy = true;
-                if (xmlDocument.DocumentElement.HasAttribute("replaceFont") && !bool.Parse(xmlDocument.DocumentElement.GetAttribute("replaceFont")))
-                {
-                    fontIfy = false;
-                }
-
-                foreach (XmlElement child in xmlDocument.DocumentElement.ChildNodes)
-                {
-                    switch (child.GetAttribute("building"))
-                    {
-                        case "VAB":
-                            vab = child.InnerText;
-                            break;
-                        case "SPH":
-                            sph = child.InnerText;
-                            break;
-                        case "AstronautComplex":
-                            ac = child.InnerText;
-                            break;
-                        case "TrackingStation":
-                            ts = child.InnerText;
-                            break;
-                        case "AdministrationBuilding":
-                            ab = child.InnerText;
-                            break;
-                        case "Runway":
-                            rwy = child.InnerText;
-                            break;
-                        case "FlagPole":
-                            flg = child.InnerText;
-                            break;
-                        case "MissionControl":
-                            mc = child.InnerText;
-                            break;
-                        case "RD":
-                            rnd = child.InnerText;
-                            break;
-                        case "LaunchPad":
-                            lnchpd = child.InnerText;
-                            break;
-                    }
-                }
-
-
-                if ((this.SSGT.text != "") || (this.SSGT.text != null))
-                {
-                    switch (this.SSGT.text)
-                    {
-                        case "Vehicle Assembly Building":
-                            this.SSGT.text = vab;
-                            break;
-
-                        case "Astronaut Complex":
-                            this.SSGT.text = ac;
-                            break;
-
-                        case "Spaceplane Hangar":
-                            this.SSGT.text = sph;
-                            break;
-
-                        case "Flag Pole":
-                            this.SSGT.text = flg;
-                            break;
-
-                        case "Research and Development":
-                            this.SSGT.text = rnd;
-                            break;
-
-                        case "Tracking Station":
-                            this.SSGT.text = ts;
-                            break;
-
-                        case "Launch Pad":
-                            this.SSGT.text = lnchpd;
-                            break;
-
-                        case "Runway":
-                            this.SSGT.text = rwy;
-                            break;
-
-                        case "Mission Control":
-                            this.SSGT.text = mc;
-                            break;
-
-                        case "Administration Building":
-                            this.SSGT.text = ab;
-                            break;
-
-                    }
-                }
-
-                if (fontIfy)
-                {
-                    if (xmlDocument.DocumentElement.HasAttribute("size"))
-                    {
-                        xFont.FontIfy(SSGT, float.Parse(xmlDocument.DocumentElement.GetAttribute("size")));
-                    }
-                    else
-                    {
-                        xFont.FontIfy(SSGT);
-                    }
-                }
+            if (Storage.Load && Storage.SpaceCenter.ssuiText.Count != 0 && this.SSGT.text != "" && this.SSGT.text != null)
+            {
+                SSGT.text = (Storage.SpaceCenter.ssuiText.ContainsKey(SSGT.text)) ? Storage.SpaceCenter.ssuiText[SSGT.text] : SSGT.text;
             }
         }
     }
