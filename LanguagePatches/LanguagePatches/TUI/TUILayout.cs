@@ -27,12 +27,15 @@
  */
 
 using LanguagePatches;
+using System.Collections.Generic;
 
 namespace UnityEngine
 {
 	// Wrapper class for Unity's GUI and GUILayout classes, to support patching of GUI-texts
 	public class TUILayout
 	{
+        private static List<string> logged = new List<string>();
+
 		public static void Label(UnityEngine.Texture image, UnityEngine.GUILayoutOption[] options)
 		{
 			GUILayout.Label(image, options);
@@ -572,8 +575,12 @@ namespace UnityEngine
         private static string Trans(string text)
         {
             // Log Content
-            TUI.log.WriteLine("[GUIText] " + text);
-            TUI.log.Flush();
+            if (!logged.Contains(text))
+            {
+                TUI.log.WriteLine("[GUIText] " + text);
+                TUI.log.Flush();
+                logged.Add(text);
+            }
 
             // Translate Content
             if (Storage.TUI.texts.Count > 0)
@@ -590,8 +597,13 @@ namespace UnityEngine
         private static GUIContent Trans(GUIContent content)
         {
             // Log Content
-            TUI.log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
-            TUI.log.Flush();
+            if (!logged.Contains(content.text) && !logged.Contains(content.tooltip))
+            {
+                TUI.log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
+                TUI.log.Flush();
+                logged.Add(content.text);
+                logged.Add(content.tooltip);
+            }
 
             // Translate Content
             if (Storage.TUI.texts.Count > 0)

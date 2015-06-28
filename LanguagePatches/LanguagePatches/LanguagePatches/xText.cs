@@ -40,7 +40,8 @@ namespace LanguagePatches
 
         public void Awake()
         {
-            logger = new StreamWriter(Storage.directory + "/" + HighLogic.LoadedScene + ".log");
+            Directory.CreateDirectory(Storage.directory + "/Logs");
+            logger = new StreamWriter(Storage.directory + "/Logs/" + HighLogic.LoadedScene + ".log");
         }
 
         public void Update()

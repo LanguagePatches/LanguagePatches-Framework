@@ -27,6 +27,7 @@
  */
 
 using LanguagePatches;
+using System.Collections.Generic;
 using System.IO;
 
 namespace UnityEngine
@@ -48,6 +49,8 @@ namespace UnityEngine
                 return _log;
             }
         }
+
+        private static List<string> logged = new List<string>();
 
 		public static System.Single HorizontalSlider(UnityEngine.Rect position, System.Single value, System.Single leftValue, System.Single rightValue)
 		{
@@ -647,8 +650,12 @@ namespace UnityEngine
         private static string Trans(string text)
         {
             // Log Content
-            log.WriteLine("[GUIText] " + text);
-            log.Flush();
+            if (!logged.Contains(text))
+            {
+                log.WriteLine("[GUIText] " + text);
+                log.Flush();
+                logged.Add(text);
+            }
 
             // Translate Content
             if (Storage.TUI.texts.Count > 0)
@@ -665,8 +672,13 @@ namespace UnityEngine
         private static GUIContent Trans(GUIContent content)
         {
             // Log Content
-            log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
-            log.Flush();
+            if (!logged.Contains(content.text) && !logged.Contains(content.tooltip))
+            {
+                log.WriteLine("[GUIContent] " + content.text + " (Tooltip: " + content.tooltip + ")");
+                log.Flush();
+                logged.Add(content.text);
+                logged.Add(content.tooltip);
+            }
 
             // Translate Content
             if (Storage.TUI.texts.Count > 0)
