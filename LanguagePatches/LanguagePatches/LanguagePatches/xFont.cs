@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -16,11 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
- * 
+ *
  * This library is intended to be used as a plugin for Kerbal Space Program
  * which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
  * itself is governed by the terms of its EULA, not the license above.
- * 
+ *
  * https://kerbalspaceprogram.com
  */
 
@@ -39,7 +39,7 @@ namespace LanguagePatches
         /// <param name="size">[Optional] New text-size of the mesh</param>
         public static void ReplaceFont(TextMesh mesh, [Optional][DefaultParameterValue(-1)] float size)
         {
-            if (Storage.Font.trueTypeFonts != null && Storage.Font.trueTypeFonts.ContainsKey(mesh.font.name)) 
+            if (Storage.Font.trueTypeFonts != null && Storage.Font.trueTypeFonts.ContainsKey(mesh.font.name))
             {
                 Font fnt = Storage.Font.trueTypeFonts[mesh.font.name];
                 Color o = mesh.renderer.sharedMaterial.color;
@@ -71,7 +71,6 @@ namespace LanguagePatches
                     text.text = "<size=" + size.ToString() + ">" + text.text + "</size>";
                 }
             }
-
         }
 
         /// <summary>

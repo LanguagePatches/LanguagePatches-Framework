@@ -1,7 +1,9 @@
+using System.IO;
+
 /**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -16,18 +18,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
- * 
+ *
  * This library is intended to be used as a plugin for Kerbal Space Program
  * which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
  * itself is governed by the terms of its EULA, not the license above.
- * 
+ *
  * https://kerbalspaceprogram.com
  */
 
 using System.Linq;
-using System.IO;
-using UnityEngine;
 using System.Reflection;
+using UnityEngine;
 
 namespace LanguagePatches
 {
@@ -36,6 +37,7 @@ namespace LanguagePatches
     {
         // Multiple paths
         public static string path = "";
+
         public static string images = "";
         public static string rawPath = "";
         public static string mustRestart = "";
@@ -86,7 +88,6 @@ namespace LanguagePatches
                 // If we have multiple nodes, kill us
                 Destroy(this);
             }
-            
         }
     }
 }

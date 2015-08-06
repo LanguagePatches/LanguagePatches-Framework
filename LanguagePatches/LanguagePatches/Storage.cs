@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -16,11 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
- * 
+ *
  * This library is intended to be used as a plugin for Kerbal Space Program
  * which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
  * itself is governed by the terms of its EULA, not the license above.
- * 
+ *
  * https://kerbalspaceprogram.com
  */
 
@@ -33,6 +33,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using UnityEngine;
+
 //using UnityEngine;
 
 namespace LanguagePatches
@@ -147,206 +148,6 @@ namespace LanguagePatches
         // Load the .xml Configuration and parse it into the static Dictionaries
         public static void LoadConfiguration()
         {
-            if (File.Exists(Loader.path + "Body.xml"))
-            {
-                // Body
-                XmlDocument body = new XmlDocument();
-                body.Load(Loader.path + "Body.xml");
-
-                // Loop through all childs
-                foreach (XmlElement e in body.DocumentElement.ChildNodes)
-                {
-                    Body.bodyDescription.Add(e.Name, e.InnerText);
-                }
-            }
-
-            // Image
-            foreach (string file in Directory.GetFiles(Loader.images + "/"))
-            {
-                // Paths
-                string name = Path.GetFileNameWithoutExtension(file);
-                string path = Loader.images + "/" + name + ".png";
-
-                // Create the Texture
-                Texture2D texture = new Texture2D(2, 2);
-                texture.LoadImage(File.ReadAllBytes(path));
-
-                // Add the Texture to the Dictionary
-                Image.textures.Add(name, texture);
-            }
-
-            if (File.Exists(Loader.path + "Loading.xml"))
-            {
-                // Loading
-                XmlDocument loading = new XmlDocument();
-                loading.Load(Loader.path + "Loading.xml");
-
-                // Settings
-                if (loading.DocumentElement.HasAttribute("loadingText"))
-                {
-                    Loading.loadingString = loading.DocumentElement.GetAttribute("loadingText");
-                }
-
-                if (loading.DocumentElement.HasAttribute("size"))
-                {
-                    Loading.size = Int32.Parse(loading.DocumentElement.GetAttribute("size"));
-                }
-
-                if (loading.DocumentElement.HasAttribute("replaceFont"))
-                {
-                    Loading.replaceFont = Boolean.Parse(loading.DocumentElement.GetAttribute("replaceFont"));
-                }
-
-                // Loop through all childs
-                foreach (XmlElement e in loading.DocumentElement.ChildNodes)
-                {
-                    Loading.tips.Add(e.InnerText);
-                }
-            }
-
-            if (File.Exists(Loader.path + "Menu.xml"))
-            {
-                // Menu
-                XmlDocument menu = new XmlDocument();
-                menu.Load(Loader.path + "Menu.xml");
-
-                // Should we replace the font?
-                if (menu.DocumentElement.HasAttribute("replaceFont"))
-                {
-                    Menu.replaceFont = Boolean.Parse(menu.DocumentElement.GetAttribute("replaceFont"));
-                }
-
-                // Loop through all childs
-                foreach (XmlElement e in menu.DocumentElement.ChildNodes)
-                {
-                    // Name of the node
-                    string name = e.GetAttribute("name");
-
-                    // Get KSPSiteURL / SpaceportURL
-                    if (name == "KSPsiteURL")
-                    {
-                        Menu.CommunityURL = e.InnerText;
-                    }
-                    else if (name == "SpaceportURL")
-                    {
-                        Menu.SpacePortURL = e.InnerText;
-                    }
-                    else
-                    {
-                        // Get the text-size
-                        int size = -1;
-                        if (e.HasAttribute("size"))
-                        {
-                            size = Int32.Parse(e.GetAttribute("size"));
-                        }
-
-                        // Glue everything together
-                        KeyValuePair<float, string> value = new KeyValuePair<float, string>((float)size, e.InnerText);
-
-                        // Add it to the dictionary
-                        Menu.buttons.Add(name, value);
-
-                    }
-                }
-            }
-
-            if (File.Exists(Loader.path + "SpaceCenter.xml"))
-            {
-                // SpaceCenter
-                XmlDocument spaceCenter = new XmlDocument();
-                spaceCenter.Load(Loader.path + "SpaceCenter.xml");
-
-                // Should we replace the font?
-                if (spaceCenter.DocumentElement.HasAttribute("replaceFont"))
-                {
-                    SpaceCenter.replaceFont = Boolean.Parse(spaceCenter.DocumentElement.GetAttribute("replaceFont"));
-                }
-
-                // New size of the text
-                if (spaceCenter.DocumentElement.HasAttribute("size"))
-                {
-                    SpaceCenter.size = Int32.Parse(spaceCenter.DocumentElement.GetAttribute("size"));
-                }
-
-                // Loop through all childs
-                foreach (XmlElement e in spaceCenter.DocumentElement.ChildNodes)
-                {
-                    string name = e.GetAttribute("name");
-                    if (!SpaceCenter.ssuiText.ContainsKey(name) && name != "")
-                    {
-                        SpaceCenter.ssuiText.Add(name, e.InnerText);
-                    }
-                }
-            }
-
-            if (File.Exists(Loader.path + "Text.xml"))
-            {
-                // Text
-                XmlDocument text = new XmlDocument();
-                text.Load(Loader.path + "Text.xml");
-
-                // Should we replace the font?
-                if (text.DocumentElement.HasAttribute("replaceFont"))
-                {
-                    Text.replaceFont = Boolean.Parse(text.DocumentElement.GetAttribute("replaceFont"));
-                }
-
-                // Loop through all childs
-                foreach (XmlElement e in text.DocumentElement.ChildNodes)
-                {
-                    string en = ((XmlCDataSection)e.FirstChild.FirstChild).InnerText;
-                    string txt = ((XmlCDataSection)e.LastChild.FirstChild).InnerText;
-
-                    if (!Text.texts.ContainsKey(en))
-                    {
-                        Text.texts.Add(en, txt);
-                    }
-                }
-            }
-
-            if (Loader.assetPath != "")
-            {
-                // Font
-                string path = KSPUtil.ApplicationRootPath + Loader.rawPath + Path.DirectorySeparatorChar + Loader.assetPath;
-                string extension = Path.GetExtension(path);
-                byte[] assetBuffer = File.ReadAllBytes(path.Replace(extension, "_" + ((int)Application.platform).ToString() + extension));
-
-                Font.asset = AssetBundle.CreateFromMemoryImmediate(assetBuffer);
-
-                // Load all true-type fonts
-                foreach (UnityEngine.Font ttf in Font.asset.LoadAll(typeof(UnityEngine.Font)))
-                {
-                    Font.trueTypeFonts.Add(ttf.name, ttf);
-                }
-
-                // Load all SpriteFonts - TextAssets
-                List<TextAsset> textAssets = new List<TextAsset>();
-                foreach (TextAsset textAsset in Font.asset.LoadAll(typeof(TextAsset)))
-                {
-                    textAssets.Add(textAsset);
-                }
-
-                // Textures
-                List<Texture2D> textures = new List<Texture2D>();
-                foreach (Texture2D texture in Font.asset.LoadAll(typeof(Texture2D)))
-                {
-                    textures.Add(texture);
-                }
-
-                // Glue them together
-                foreach (TextAsset textAsset in textAssets)
-                {
-                    Texture2D textTexture = textures.Find(t => t.name == textAsset.name);
-
-                    Material textMaterial = new Material(Shader.Find("Sprite/Vertex Colored"));
-                    textMaterial.SetTexture("_MainTex", textTexture);
-                    Material.DontDestroyOnLoad(textMaterial);
-
-                    KeyValuePair<TextAsset, Material> value = new KeyValuePair<TextAsset, Material>(textAsset, textMaterial);
-                    Font.spriteFont.Add(textAsset.name, value);
-                }
-            }
-
             if (File.Exists(Loader.path + "GUI.xml"))
             {
                 // GUI
@@ -464,7 +265,6 @@ namespace LanguagePatches
 
                     // Create the LaunchHelper
                     Assembly launch = Assembly.Load(LH.LaunchHelper.Helper);
-                    Debug.Log(launch.FullName);
                     object o = Activator.CreateInstance(launch.GetExportedTypes().First(t => t.Name == "LaunchHelper"));
 
                     // Activate it..
@@ -477,7 +277,205 @@ namespace LanguagePatches
                     Application.Quit();
                 }
             }
+
+            if (File.Exists(Loader.path + "Body.xml"))
+            {
+                // Body
+                XmlDocument body = new XmlDocument();
+                body.Load(Loader.path + "Body.xml");
+
+                // Loop through all childs
+                foreach (XmlElement e in body.DocumentElement.ChildNodes)
+                {
+                    Body.bodyDescription.Add(e.Name, e.InnerText);
+                }
+            }
+
+            // Image
+            foreach (string file in Directory.GetFiles(Loader.images + "/"))
+            {
+                // Paths
+                string name = Path.GetFileNameWithoutExtension(file);
+                string path = Loader.images + "/" + name + ".png";
+
+                // Create the Texture
+                Texture2D texture = new Texture2D(2, 2);
+                texture.LoadImage(File.ReadAllBytes(path));
+
+                // Add the Texture to the Dictionary
+                Image.textures.Add(name, texture);
+            }
+
+            if (File.Exists(Loader.path + "Loading.xml"))
+            {
+                // Loading
+                XmlDocument loading = new XmlDocument();
+                loading.Load(Loader.path + "Loading.xml");
+
+                // Settings
+                if (loading.DocumentElement.HasAttribute("loadingText"))
+                {
+                    Loading.loadingString = loading.DocumentElement.GetAttribute("loadingText");
+                }
+
+                if (loading.DocumentElement.HasAttribute("size"))
+                {
+                    Loading.size = Int32.Parse(loading.DocumentElement.GetAttribute("size"));
+                }
+
+                if (loading.DocumentElement.HasAttribute("replaceFont"))
+                {
+                    Loading.replaceFont = Boolean.Parse(loading.DocumentElement.GetAttribute("replaceFont"));
+                }
+
+                // Loop through all childs
+                foreach (XmlElement e in loading.DocumentElement.ChildNodes)
+                {
+                    Loading.tips.Add(e.InnerText);
+                }
+            }
+
+            if (File.Exists(Loader.path + "Menu.xml"))
+            {
+                // Menu
+                XmlDocument menu = new XmlDocument();
+                menu.Load(Loader.path + "Menu.xml");
+
+                // Should we replace the font?
+                if (menu.DocumentElement.HasAttribute("replaceFont"))
+                {
+                    Menu.replaceFont = Boolean.Parse(menu.DocumentElement.GetAttribute("replaceFont"));
+                }
+
+                // Loop through all childs
+                foreach (XmlElement e in menu.DocumentElement.ChildNodes)
+                {
+                    // Name of the node
+                    string name = e.GetAttribute("name");
+
+                    // Get KSPSiteURL / SpaceportURL
+                    if (name == "KSPsiteURL")
+                    {
+                        Menu.CommunityURL = e.InnerText;
+                    }
+                    else if (name == "SpaceportURL")
+                    {
+                        Menu.SpacePortURL = e.InnerText;
+                    }
+                    else
+                    {
+                        // Get the text-size
+                        int size = -1;
+                        if (e.HasAttribute("size"))
+                        {
+                            size = Int32.Parse(e.GetAttribute("size"));
+                        }
+
+                        // Glue everything together
+                        KeyValuePair<float, string> value = new KeyValuePair<float, string>((float)size, e.InnerText);
+
+                        // Add it to the dictionary
+                        Menu.buttons.Add(name, value);
+                    }
+                }
+            }
+
+            if (File.Exists(Loader.path + "SpaceCenter.xml"))
+            {
+                // SpaceCenter
+                XmlDocument spaceCenter = new XmlDocument();
+                spaceCenter.Load(Loader.path + "SpaceCenter.xml");
+
+                // Should we replace the font?
+                if (spaceCenter.DocumentElement.HasAttribute("replaceFont"))
+                {
+                    SpaceCenter.replaceFont = Boolean.Parse(spaceCenter.DocumentElement.GetAttribute("replaceFont"));
+                }
+
+                // New size of the text
+                if (spaceCenter.DocumentElement.HasAttribute("size"))
+                {
+                    SpaceCenter.size = Int32.Parse(spaceCenter.DocumentElement.GetAttribute("size"));
+                }
+
+                // Loop through all childs
+                foreach (XmlElement e in spaceCenter.DocumentElement.ChildNodes)
+                {
+                    string name = e.GetAttribute("name");
+                    if (!SpaceCenter.ssuiText.ContainsKey(name) && name != "")
+                    {
+                        SpaceCenter.ssuiText.Add(name, e.InnerText);
+                    }
+                }
+            }
+
+            if (File.Exists(Loader.path + "Text.xml"))
+            {
+                // Text
+                XmlDocument text = new XmlDocument();
+                text.Load(Loader.path + "Text.xml");
+
+                // Should we replace the font?
+                if (text.DocumentElement.HasAttribute("replaceFont"))
+                {
+                    Text.replaceFont = Boolean.Parse(text.DocumentElement.GetAttribute("replaceFont"));
+                }
+
+                // Loop through all childs
+                foreach (XmlElement e in text.DocumentElement.ChildNodes)
+                {
+                    string en = ((XmlCDataSection)e.FirstChild.FirstChild).InnerText;
+                    string txt = ((XmlCDataSection)e.LastChild.FirstChild).InnerText;
+
+                    if (!Text.texts.ContainsKey(en))
+                    {
+                        Text.texts.Add(en, txt);
+                    }
+                }
+            }
+
+            if (Loader.assetPath != "")
+            {
+                // Font
+                string path = KSPUtil.ApplicationRootPath + Loader.rawPath + Path.DirectorySeparatorChar + Loader.assetPath;
+                string extension = Path.GetExtension(path);
+                byte[] assetBuffer = File.ReadAllBytes(path.Replace(extension, "_" + ((int)Application.platform).ToString() + extension));
+
+                Font.asset = AssetBundle.CreateFromMemoryImmediate(assetBuffer);
+
+                // Load all true-type fonts
+                foreach (UnityEngine.Font ttf in Font.asset.LoadAll(typeof(UnityEngine.Font)))
+                {
+                    Font.trueTypeFonts.Add(ttf.name, ttf);
+                }
+
+                // Load all SpriteFonts - TextAssets
+                List<TextAsset> textAssets = new List<TextAsset>();
+                foreach (TextAsset textAsset in Font.asset.LoadAll(typeof(TextAsset)))
+                {
+                    textAssets.Add(textAsset);
+                }
+
+                // Textures
+                List<Texture2D> textures = new List<Texture2D>();
+                foreach (Texture2D texture in Font.asset.LoadAll(typeof(Texture2D)))
+                {
+                    textures.Add(texture);
+                }
+
+                // Glue them together
+                foreach (TextAsset textAsset in textAssets)
+                {
+                    Texture2D textTexture = textures.Find(t => t.name == textAsset.name);
+
+                    Material textMaterial = new Material(Shader.Find("Sprite/Vertex Colored"));
+                    textMaterial.SetTexture("_MainTex", textTexture);
+                    Material.DontDestroyOnLoad(textMaterial);
+
+                    KeyValuePair<TextAsset, Material> value = new KeyValuePair<TextAsset, Material>(textAsset, textMaterial);
+                    Font.spriteFont.Add(textAsset.name, value);
+                }
+            }
         }
     }
 }
-

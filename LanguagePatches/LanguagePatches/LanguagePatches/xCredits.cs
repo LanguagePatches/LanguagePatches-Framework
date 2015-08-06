@@ -1,7 +1,7 @@
 /**
  * Language Patches
  * Copyright (C) 2015 Thomas P. (http://kerbalspaceprogram.de), simon56modder
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -16,11 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
- * 
+ *
  * This library is intended to be used as a plugin for Kerbal Space Program
  * which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
  * itself is governed by the terms of its EULA, not the license above.
- * 
+ *
  * https://kerbalspaceprogram.com
  */
 
@@ -32,7 +32,7 @@ namespace LanguagePatches
     [KSPAddon(KSPAddon.Startup.Credits, false)]
     public class Credits : MonoBehaviour
     {
-        void Start()
+        private void Start()
         {
             if (Storage.Credits.texts.Count > 0 && Storage.Load)
             {
@@ -53,26 +53,32 @@ namespace LanguagePatches
                                     if (mesh.text == "Legacy")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "GameToolsDeveloper":
                                     if (mesh.text == "Game & Tools Developer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "createdBy":
                                     if (mesh.text == "Created By")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "contentDesign":
                                     if (mesh.text == "Content Design")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "leadGameDeveloper":
                                     if (mesh.text == "Lead Game Developer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "UIdeveloper":
                                     if (mesh.text == "UI Developer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "aka":
                                     if (mesh.text == "(aka HarvesteR)")
                                         mesh.text = "(" + text.Value + " HarvesterR)";
@@ -87,66 +93,82 @@ namespace LanguagePatches
                                     else if (mesh.text == "Bob Palmer (aka RoverDude)")
                                         mesh.text = "Bob Palmer (" + text.Value + " RoverDude)";
                                     break;
+
                                 case "executiveProducers":
                                     if (mesh.text == "Executive Producers")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "programming":
                                     if (mesh.text == "Programming")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "otherTracks":
                                     if (mesh.text == "Other Tracks")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "soundDesigner":
                                     if (mesh.text == "Sound Designer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "producer":
                                     if (mesh.text == "Producer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "3dArtists":
                                     if (mesh.text == "3d")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "communityContributors":
                                     if (mesh.text == "Community Contributors")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "gameAndServerDeveloper":
                                     if (mesh.text == "Game & Server Developer")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "specialThanksTo":
                                     if (mesh.text == "Special Thanks to")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "loadingScreenArtworkBy":
                                     if (mesh.text == "Loading Screen Artwork by")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "QAdirectorLead":
                                     if (mesh.text == "QA Director / Lead")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "theAwesomeQAteam":
                                     if (mesh.text == "The Awesome QA Team")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "KSPmainTheme":
                                     if (mesh.text == "KSP Main Theme")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "originalMusic":
                                     if (mesh.text == "Original Music")
                                         mesh.text = text.Value;
                                     break;
+
                                 case "writtenBy":
                                     if (mesh.text == "Written by Kevin MacLeod")
                                         mesh.text = text.Value + " Kevin MacLeod";
                                     break;
+
                                 case "communityLead":
                                     if (mesh.text == "Community Lead")
                                         mesh.text = text.Value;
