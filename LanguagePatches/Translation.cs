@@ -6,6 +6,7 @@
  */
  
 using System;
+using System.Text.RegularExpressions;
 
 namespace LanguagePatches
 {
@@ -41,6 +42,9 @@ namespace LanguagePatches
             // Assign the new texts
             text = node.GetValue("text");
             translation = node.GetValue("translation");
+
+            // Replace variable placeholders
+            translation = Regex.Replace(translation, @"@(\d*)", "{$1}");
         }
     }
 }
