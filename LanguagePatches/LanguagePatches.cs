@@ -107,10 +107,15 @@ namespace LanguagePatches
                 // Debug mode
                 if (debug)
                 {
-                    if (!logged.ContainsKey(text) || translations[logged[text]] != text.text)
+                    if (!logged.ContainsKey(text))
                     {
                         Logger.Active.Log(text.text);
                         logged.Add(text, text.text);
+                    }
+                    else if (logged.ContainsKey(text) && translations[logged[text]] != text.text)
+                    {
+                        Logger.Active.Log(text.text);
+                        logged[text] = text.text;
                     }
                 }
 
@@ -124,10 +129,15 @@ namespace LanguagePatches
                 // Debug mode
                 if (debug)
                 {
-                    if (!logged2.ContainsKey(text) || translations[logged2[text]] != text.text)
+                    if (!logged2.ContainsKey(text))
                     {
                         Logger.Active.Log(text.text);
                         logged2.Add(text, text.text);
+                    }
+                    else if (logged2.ContainsKey(text) && translations[logged2[text]] != text.text)
+                    {
+                        Logger.Active.Log(text.text);
+                        logged2[text] = text.text;
                     }
                 }
 
