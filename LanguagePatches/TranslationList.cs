@@ -27,14 +27,14 @@ namespace LanguagePatches
             get
             {
                 // Get the matching translation
-                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, t.text));
+                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, t.text, !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
 
                 // Null check
                 if (translation == null || (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene))
                     return text;
 
                 // Get the regex matches and create the return string
-                GroupCollection groups = Regex.Match(text, translation.text).Groups;
+                GroupCollection groups = Regex.Match(text, translation.text, !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
                 if (groups.Count == 1)
                     return translation.translation;
                 else

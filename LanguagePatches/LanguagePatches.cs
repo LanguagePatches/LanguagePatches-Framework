@@ -42,6 +42,11 @@ namespace LanguagePatches
         public Boolean debug;
 
         /// <summary>
+        /// Whether the framework is case insensitive
+        /// </summary>
+        public Boolean caseSensitive = true;
+
+        /// <summary>
         /// Logged UI elements
         /// </summary>
         private Dictionary<Text, String> logged { get; set; }
@@ -79,6 +84,9 @@ namespace LanguagePatches
                 String[] hints = config.GetNode("HINTS").GetValues("hint");
                 LoadingScreen.Instance.Screens.ForEach(s => s.tips = hints);                
             }
+
+            // Load case sensivity
+            Boolean.TryParse(config.GetValue("caseSensitive"), out caseSensitive);
 
             // Get debug mode
             Boolean.TryParse(config.GetValue("debug"), out debug);
