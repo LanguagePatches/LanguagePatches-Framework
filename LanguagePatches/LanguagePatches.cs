@@ -46,12 +46,16 @@ namespace LanguagePatches
         /// </summary>
         private Dictionary<Text, String> logged { get; set; }
         private Dictionary<TextMesh, String> logged2 { get; set; }
+        private Dictionary<GameScenes, Logger> loggers { get; set; } 
 
         /// <summary>
         /// Load the configs when the game has started
         /// </summary>
         void Awake()
         {
+            // Instance
+            Instance = this;
+
             // Get the ConfigNodes
             ConfigNode[] nodes = GameDatabase.Instance.GetConfigs("LANGUAGEPATCHES").Select(c => c.config).ToArray();
 
@@ -82,10 +86,12 @@ namespace LanguagePatches
             // Logger
             if (debug)
             {
+                loggers = new Dictionary<GameScenes, Logger>();
                 logged = new Dictionary<Text, String>();
                 logged2 = new Dictionary<TextMesh, String>();
-                GameEvents.onGameSceneLoadRequested.Add((scene) => { new Logger(scene.ToString()).SetAsActive(); });
-                new Logger(HighLogic.LoadedScene.ToString()).SetAsActive();
+                GameEvents.onGameSceneLoadRequested.Add((scene) => { if (!loggers.ContainsKey(scene)) loggers.Add(scene, new Logger(scene.ToString())); loggers[scene].SetAsActive(); });
+                loggers.Add(HighLogic.LoadedScene, new Logger(HighLogic.LoadedScene.ToString()));
+                loggers[HighLogic.LoadedScene].SetAsActive();
             }
 
         }
