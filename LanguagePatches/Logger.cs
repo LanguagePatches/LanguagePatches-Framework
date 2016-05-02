@@ -146,7 +146,7 @@ namespace LanguagePatches
                 // Open the log file (overwrite existing logs)
                 LogFileName = LogFileName.Replace("/", "").Replace("\\", "");
                 string LogFile = Logger.LogDirectory + LogFileName + ".log";
-                loggerStream = new StreamWriter(LogFile, true);
+                loggerStream = new StreamWriter(LogFile);
 
                 // Write an opening message
                 string logVersion = "//=====  " + version + "  =====//";
