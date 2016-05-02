@@ -4,16 +4,12 @@
  * Copyright (c) 2016 Thomas P.
  * Licensed under the terms of the MIT License
  */
-
-/// System
+ 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-/// <summary>
-/// Our Namespace
-/// </summary>
 namespace LanguagePatches
 {
     /// <summary>
@@ -30,14 +26,14 @@ namespace LanguagePatches
         {
             get
             {
-                /// Get the matching translation
+                // Get the matching translation
                 Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, t.text));
 
-                /// Null check
+                // Null check
                 if (translation == null)
                     return text;
 
-                /// Get the regex matches and create the return string
+                // Get the regex matches and create the return string
                 GroupCollection groups = Regex.Match(text, translation.text).Groups;
                 if (groups.Count == 1)
                     return translation.translation;

@@ -4,13 +4,9 @@
  * Copyright (c) 2016 Thomas P.
  * Licensed under the terms of the MIT License
  */
-
-/// System
+ 
 using System;
 
-/// <summary>
-/// Our Namespace
-/// </summary>
 namespace LanguagePatches
 {
     /// <summary>
@@ -34,15 +30,15 @@ namespace LanguagePatches
         /// <param name="node">The config node where the </param>
         public Translation(ConfigNode node)
         {
-            /// Check for original text
+            // Check for original text
             if (!node.HasValue("text"))
                 throw new Exception("The config node is missing the text value!");
 
-            /// Check for translation
+            // Check for translation
             if (!node.HasValue("translation"))
                 throw new Exception("The config node is missing the translation value!");
 
-            /// Assign the new texts
+            // Assign the new texts
             text = node.GetValue("text");
             translation = node.GetValue("translation");
         }

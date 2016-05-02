@@ -5,21 +5,13 @@
  * Licensed under the terms of the MIT License
  */
 
-/// System
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-/// KSP
 using KSP.UI;
-
-/// Unity
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Our Namespace
-/// </summary>
 namespace LanguagePatches
 {
     /// <summary>
@@ -45,30 +37,77 @@ namespace LanguagePatches
         public ConfigNode config { get; set; }
 
         /// <summary>
+        /// Whether the plugin should run in debug mode.
+        /// </summary>
+        public Boolean debug;
+
+        /// <summary>
+        /// Logged UI elements
+        /// </summary>
+        private Dictionary<Text, String> logged { get; set; }   
+
+        /// <summary>
         /// Load the configs when the game has started
         /// </summary>
         void Awake()
         {
-            /// Get the ConfigNodes
+            // Get the ConfigNodes
             ConfigNode[] nodes = GameDatabase.Instance.GetConfigs("LANGUAGEPATCHES").Select(c => c.config).ToArray();
 
-            /// Merge them into a single one
-            for (Int32 i = 1; i < nodes.Length; i++)
-                nodes[0].AddData(nodes[i]);
+            // Merge them into a single one
+            if (nodes.Length > 1)
+            {
+                for (Int32 i = 1; i < nodes.Length; i++)
+                    nodes[0].AddData(nodes[i]);
+            }
             config = nodes[0];
 
-            /// Create a new Translation list from the node
+            // Create a new Translation list from the node
             translations = new TranslationList(config);
 
-            /// Prevent this class from getting destroyed
+            // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
 
-            /// Override loading hints
+            // Override loading hints
             if (config.HasNode("HINTS"))
             {
                 String[] hints = config.GetNode("HINTS").GetValues("hint");
                 LoadingScreen.Instance.Screens.ForEach(s => s.tips = hints);                
             }
-         }
+
+            // Get debug mode
+            Boolean.TryParse(config.GetValue("debug"), out debug);
+            
+            // Logger
+            if (debug)
+            {
+                logged = new Dictionary<Text, String>();
+                GameEvents.onGameSceneLoadRequested.Add((scene) => { new Logger(scene.ToString()).SetAsActive(); });
+                new Logger(HighLogic.LoadedScene.ToString()).SetAsActive();
+            }
+
+        }
+
+        /// <summary>
+        /// Applies the translations to all ui elements it can find
+        /// </summary>
+        void Update()
+        {
+            foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
+            {
+                // Debug mode
+                if (debug)
+                {
+                    if (!logged.ContainsKey(text) || translations[logged[text]] != text.text)
+                    {
+                        Logger.Active.Log(text.text);
+                        logged.Add(text, text.text);
+                    }
+                }
+
+                // Replace text
+                text.text = translations[text.text];
+            }
+        }
     }
 }
