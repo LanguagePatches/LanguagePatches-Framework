@@ -30,7 +30,7 @@ namespace LanguagePatches
                 Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, t.text));
 
                 // Null check
-                if (translation == null)
+                if (translation == null || (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene))
                     return text;
 
                 // Get the regex matches and create the return string

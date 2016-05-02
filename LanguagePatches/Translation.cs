@@ -26,6 +26,11 @@ namespace LanguagePatches
         public String translation { get; set; }
 
         /// <summary>
+        /// The scene where the translation gets applied
+        /// </summary>
+        public GameScenes? scene { get; set; }
+
+        /// <summary>
         /// Creates a new Translation component from a config node
         /// </summary>
         /// <param name="node">The config node where the </param>
@@ -42,6 +47,12 @@ namespace LanguagePatches
             // Assign the new texts
             text = node.GetValue("text");
             translation = node.GetValue("translation");
+
+            // Loads scene value
+            if (node.HasValue("scene"))
+                scene = (GameScenes)Enum.Parse(typeof(GameScenes), node.GetValue("scene"));
+            else
+                scene = null;
 
             // Replace variable placeholders
             translation = Regex.Replace(translation, @"@(\d*)", "{$1}");
