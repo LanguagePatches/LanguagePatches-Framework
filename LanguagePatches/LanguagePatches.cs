@@ -44,7 +44,8 @@ namespace LanguagePatches
         /// <summary>
         /// Logged UI elements
         /// </summary>
-        private Dictionary<Text, String> logged { get; set; }   
+        private Dictionary<Text, String> logged { get; set; }
+        private Dictionary<TextMesh, String> logged2 { get; set; }
 
         /// <summary>
         /// Load the configs when the game has started
@@ -82,6 +83,7 @@ namespace LanguagePatches
             if (debug)
             {
                 logged = new Dictionary<Text, String>();
+                logged2 = new Dictionary<TextMesh, String>();
                 GameEvents.onGameSceneLoadRequested.Add((scene) => { new Logger(scene.ToString()).SetAsActive(); });
                 new Logger(HighLogic.LoadedScene.ToString()).SetAsActive();
             }
@@ -93,6 +95,7 @@ namespace LanguagePatches
         /// </summary>
         void Update()
         {
+            // Text
             foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
             {
                 // Debug mode
@@ -102,6 +105,23 @@ namespace LanguagePatches
                     {
                         Logger.Active.Log(text.text);
                         logged.Add(text, text.text);
+                    }
+                }
+
+                // Replace text
+                text.text = translations[text.text];
+            }
+
+            // TextMesh (wtf is this)
+            foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
+            {
+                // Debug mode
+                if (debug)
+                {
+                    if (!logged2.ContainsKey(text) || translations[logged2[text]] != text.text)
+                    {
+                        Logger.Active.Log(text.text);
+                        logged2.Add(text, text.text);
                     }
                 }
 
