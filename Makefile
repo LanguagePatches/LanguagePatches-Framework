@@ -10,7 +10,7 @@ CURRENT_DIR := $(shell pwd)
 PLUGIN := LanguagePatches.dll
 
 # Code paths
-CODE := $(CURRENT_DIR)/Source
+CODE := $(CURRENT_DIR)/LanguagePatches
 
 # Assembly References
 CORLIB := $(MONO_ASSEMBLIES)/mscorlib.dll,$(MONO_ASSEMBLIES)/System.dll,$(MONO_ASSEMBLIES)/System.Core.dll
