@@ -31,5 +31,4 @@ $(PLUGIN):
 
 ### UTILS ###
 clean:
-	rm $(ZIP_NAME)
 	rm *.dll
