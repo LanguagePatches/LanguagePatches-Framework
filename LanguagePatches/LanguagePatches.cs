@@ -8,9 +8,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using KSP.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Reflection.Emit;
 
 namespace LanguagePatches
 {
@@ -47,11 +49,13 @@ namespace LanguagePatches
         public Boolean caseSensitive = true;
 
         /// <summary>
-        /// Logged UI elements
+        /// Patched UI elements
         /// </summary>
-        private Dictionary<Text, String> logged { get; set; }
-        private Dictionary<TextMesh, String> logged2 { get; set; }
-        private Dictionary<GameScenes, Logger> loggers { get; set; } 
+        private Dictionary<Text, String> patched_Text { get; set; }
+
+        private Dictionary<TextMesh, String> patched_Mesh { get; set; }
+        private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
+        private Dictionary<GameScenes, Logger> loggers { get; set; }
 
         /// <summary>
         /// Load the configs when the game has started
@@ -82,7 +86,7 @@ namespace LanguagePatches
             if (config.HasNode("HINTS"))
             {
                 String[] hints = config.GetNode("HINTS").GetValues("hint");
-                LoadingScreen.Instance.Screens.ForEach(s => s.tips = hints);                
+                LoadingScreen.Instance.Screens.ForEach(s => s.tips = hints);
             }
 
             // Load case sensivity
@@ -90,14 +94,21 @@ namespace LanguagePatches
 
             // Get debug mode
             Boolean.TryParse(config.GetValue("debug"), out debug);
-            
+
+            // Internals
+            patched_Text = new Dictionary<Text, String>();
+            patched_Mesh = new Dictionary<TextMesh, String>();
+            patched_Base = new Dictionary<DialogGUIBase, String>();
+
             // Logger
             if (debug)
             {
                 loggers = new Dictionary<GameScenes, Logger>();
-                logged = new Dictionary<Text, String>();
-                logged2 = new Dictionary<TextMesh, String>();
-                GameEvents.onGameSceneLoadRequested.Add((scene) => { if (!loggers.ContainsKey(scene)) loggers.Add(scene, new Logger(scene.ToString())); loggers[scene].SetAsActive(); });
+                GameEvents.onGameSceneLoadRequested.Add((scene) =>
+                {
+                    if (!loggers.ContainsKey(scene)) loggers.Add(scene, new Logger(scene.ToString()));
+                    loggers[scene].SetAsActive();
+                });
                 loggers.Add(HighLogic.LoadedScene, new Logger(HighLogic.LoadedScene.ToString()));
                 loggers[HighLogic.LoadedScene].SetAsActive();
             }
@@ -112,45 +123,76 @@ namespace LanguagePatches
             // Text
             foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
             {
-                // Debug mode
-                if (debug)
+                if (!patched_Text.ContainsKey(text))
                 {
-                    if (!logged.ContainsKey(text))
-                    {
-                        Logger.Active.Log(text.text);
-                        logged.Add(text, text.text);
-                    }
-                    else if (logged.ContainsKey(text) && translations[logged[text]] != text.text)
-                    {
-                        Logger.Active.Log(text.text);
-                        logged[text] = text.text;
-                    }
-                }
+                    // Log
+                    if (debug) Logger.Active.Log(text.text);
 
-                // Replace text
-                text.text = translations[text.text];
+                    // Replace text
+                    text.text = translations[text.text];
+                    patched_Text.Add(text, text.text);
+                }
+                else if (patched_Text.ContainsKey(text) && patched_Text[text] != text.text)
+                {
+                    // Log
+                    if (debug) Logger.Active.Log(text.text);
+
+                    // Replace text
+                    text.text = translations[text.text];
+                    patched_Text[text] = text.text;
+                }
             }
 
             // TextMesh (wtf is this)
             foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
             {
-                // Debug mode
-                if (debug)
+                if (!patched_Mesh.ContainsKey(text))
                 {
-                    if (!logged2.ContainsKey(text))
-                    {
-                        Logger.Active.Log(text.text);
-                        logged2.Add(text, text.text);
-                    }
-                    else if (logged2.ContainsKey(text) && translations[logged2[text]] != text.text)
-                    {
-                        Logger.Active.Log(text.text);
-                        logged2[text] = text.text;
-                    }
-                }
+                    // Log
+                    if (debug) Logger.Active.Log(text.text);
 
-                // Replace text
-                text.text = translations[text.text];
+                    // Replace text
+                    text.text = translations[text.text];
+                    patched_Mesh.Add(text, text.text);
+                }
+                else if (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text)
+                {
+                    // Log
+                    if (debug) Logger.Active.Log(text.text);
+
+                    // Replace text
+                    text.text = translations[text.text];
+                    patched_Mesh[text] = text.text;
+                }
+            }
+
+            // PopupDialog (Squaaaad)
+            foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
+            {
+                foreach (DialogGUIBase guiBase in dialog.dialogToDisplay.Options)
+                {
+                    Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
+                    {
+                        if (!patched_Base.ContainsKey(text))
+                        {
+                            // Log
+                            if (debug) Logger.Active.Log(text.OptionText);
+
+                            // Replace text
+                            text.OptionText = translations[text.OptionText];
+                            patched_Base.Add(text, text.OptionText);
+                        }
+                        else if (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText)
+                        {
+                            // Log
+                            if (debug) Logger.Active.Log(text.OptionText);
+
+                            // Replace text
+                            text.OptionText = translations[text.OptionText];
+                            patched_Base[text] = text.OptionText;
+                        }
+                    });
+                }
             }
         }
     }
