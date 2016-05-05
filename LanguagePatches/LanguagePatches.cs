@@ -21,7 +21,7 @@ namespace LanguagePatches
     /// to translate the Games UI.
     /// </summary>
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
-    public class LanguagePatches : MonoBehaviour
+    public class LanguagePatches : AsyncMonoBehaviour
     {
         /// <summary>
         /// The currently active Language Controller
@@ -60,8 +60,11 @@ namespace LanguagePatches
         /// <summary>
         /// Load the configs when the game has started
         /// </summary>
-        void Awake()
+        protected override void Awake()
         {
+            // Call base
+            base.Awake();
+
             // Instance
             Instance = this;
 
@@ -116,9 +119,9 @@ namespace LanguagePatches
         }
 
         /// <summary>
-        /// Applies the translations to all ui elements it can find
+        /// Updates the ingame texts
         /// </summary>
-        void Update()
+        protected override void AsyncUpdate()
         {
             // Text
             foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
