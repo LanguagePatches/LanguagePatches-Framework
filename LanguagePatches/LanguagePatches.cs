@@ -6,13 +6,16 @@
  */
 
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using KSP.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection.Emit;
+using UnityEngine.Assertions.Must;
 
 namespace LanguagePatches
 {
@@ -21,7 +24,7 @@ namespace LanguagePatches
     /// to translate the Games UI.
     /// </summary>
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
-    public class LanguagePatches : AsyncMonoBehaviour
+    public class LanguagePatches : MonoBehaviour
     {
         /// <summary>
         /// The currently active Language Controller
@@ -49,22 +52,25 @@ namespace LanguagePatches
         public Boolean caseSensitive = true;
 
         /// <summary>
+        /// Fonts, either loaded from Unity Asset Bundles or from the OS
+        /// </summary>
+        public Dictionary<String, Font> fonts { get; set; }
+
+        /// <summary>
         /// Patched UI elements
         /// </summary>
         private Dictionary<Text, String> patched_Text { get; set; }
 
         private Dictionary<TextMesh, String> patched_Mesh { get; set; }
         private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
+        private Dictionary<PopupDialog, String> patched_Dialog { get; set; }
         private Dictionary<GameScenes, Logger> loggers { get; set; }
 
         /// <summary>
         /// Load the configs when the game has started
         /// </summary>
-        protected override void Awake()
+        void Awake()
         {
-            // Call base
-            base.Awake();
-
             // Instance
             Instance = this;
 
@@ -82,6 +88,9 @@ namespace LanguagePatches
             // Create a new Translation list from the node
             translations = new TranslationList(config);
 
+            // Create fonts
+            fonts = new Dictionary<String, Font>();
+
             // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
 
@@ -90,6 +99,26 @@ namespace LanguagePatches
             {
                 String[] hints = config.GetNode("HINTS").GetValues("hint");
                 LoadingScreen.Instance.Screens.ForEach(s => s.tips = hints);
+            }
+
+            // Load the fonts
+            if (config.HasNode("FONTS"))
+            {
+                foreach (ConfigNode.Value value in config.GetNode("FONTS").values)
+                {
+                    String[] split = value.value.Split(':');
+                    if (split[0].ToLowerInvariant() == "OS")
+                    {
+                        String[] moreSplit = split[1].Split('@');
+                        fonts.Add(value.name, Font.CreateDynamicFontFromOSFont(moreSplit[0], Int32.Parse(moreSplit[1])));
+                    }
+                    else
+                    {
+                        AssetBundle bundle = AssetBundle.CreateFromMemoryImmediate(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
+                        fonts.Add(value.name, Instantiate((bundle.LoadAsset<Font>(split[1]))));
+                        bundle.Unload(true);
+                    }
+                }
             }
 
             // Load case sensivity
@@ -102,6 +131,7 @@ namespace LanguagePatches
             patched_Text = new Dictionary<Text, String>();
             patched_Mesh = new Dictionary<TextMesh, String>();
             patched_Base = new Dictionary<DialogGUIBase, String>();
+            patched_Dialog = new Dictionary<PopupDialog, String>();
 
             // Logger
             if (debug)
@@ -119,83 +149,91 @@ namespace LanguagePatches
         }
 
         /// <summary>
+        /// The current frame
+        /// </summary>
+        private Byte frame;
+
+        /// <summary>
         /// Updates the ingame texts
         /// </summary>
-        protected override void AsyncUpdate()
+        void Update()
         {
-            // Text
-            foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
+            // Update
+            frame++;
+
+            // First frame
+            if (frame == 1)
             {
-                if (!patched_Text.ContainsKey(text))
+                // Patch all Unity UI Texts
+                foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
                 {
-                    // Log
-                    if (debug) Logger.Active.Log(text.text);
-
-                    // Replace text
-                    text.text = translations[text.text];
-                    patched_Text.Add(text, text.text);
-                }
-                else if (patched_Text.ContainsKey(text) && patched_Text[text] != text.text)
-                {
-                    // Log
-                    if (debug) Logger.Active.Log(text.text);
-
-                    // Replace text
-                    text.text = translations[text.text];
-                    patched_Text[text] = text.text;
-                }
-            }
-
-            // TextMesh (wtf is this)
-            foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
-            {
-                if (!patched_Mesh.ContainsKey(text))
-                {
-                    // Log
-                    if (debug) Logger.Active.Log(text.text);
-
-                    // Replace text
-                    text.text = translations[text.text];
-                    patched_Mesh.Add(text, text.text);
-                }
-                else if (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text)
-                {
-                    // Log
-                    if (debug) Logger.Active.Log(text.text);
-
-                    // Replace text
-                    text.text = translations[text.text];
-                    patched_Mesh[text] = text.text;
-                }
-            }
-
-            // PopupDialog (Squaaaad)
-            foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
-            {
-                foreach (DialogGUIBase guiBase in dialog.dialogToDisplay.Options)
-                {
-                    Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
+                    if (!patched_Text.ContainsKey(text) || (patched_Text.ContainsKey(text) && patched_Text[text] != text.text))
                     {
-                        if (!patched_Base.ContainsKey(text))
-                        {
-                            // Log
-                            if (debug) Logger.Active.Log(text.OptionText);
+                        // Log
+                        if (debug) Logger.Active.Log(text.text);
 
-                            // Replace text
-                            text.OptionText = translations[text.OptionText];
-                            patched_Base.Add(text, text.OptionText);
-                        }
-                        else if (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText)
-                        {
-                            // Log
-                            if (debug) Logger.Active.Log(text.OptionText);
-
-                            // Replace text
-                            text.OptionText = translations[text.OptionText];
-                            patched_Base[text] = text.OptionText;
-                        }
-                    });
+                        // Replace text
+                        text.text = translations[text.text];
+                        if (fonts.ContainsKey(text.font.name)) text.font = fonts[text.font.name];
+                        patched_Text.Add(text, text.text);
+                    }
                 }
+                return;
+            }
+
+            // Second Frame
+            if (frame == 2)
+            {
+                // Patch all TextMeshs
+                foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
+                {
+                    if (!patched_Mesh.ContainsKey(text) || (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text))
+                    {
+                        // Log
+                        if (debug) Logger.Active.Log(text.text);
+
+                        // Replace text and font
+                        text.text = translations[text.text];
+                        if (fonts.ContainsKey(text.font.name)) text.font = fonts[text.font.name];
+                        patched_Mesh.Add(text, text.text);
+                    }
+                }
+                return;
+            }
+
+            // Third Frame
+            if (frame == 3)
+            {
+                // Patch all PopupDialogs
+                foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
+                {
+                    // Null check
+                    if (dialog?.dialogToDisplay == null)
+                        continue;
+
+                    // Translate the texts
+                    dialog.dialogToDisplay.title = translations[dialog.dialogToDisplay.title];
+                    Debug.Log(dialog.dialogToDisplay.title);
+                    dialog.dialogToDisplay.message = translations[dialog.dialogToDisplay.message];
+
+                    // Patch the Dialog Options
+                    foreach (DialogGUIBase guiBase in dialog.dialogToDisplay.Options)
+                    {
+                        Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
+                        {
+                            if (!patched_Base.ContainsKey(text) || (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText))
+                            {
+                                // Log
+                                if (debug) Logger.Active.Log(text.OptionText);
+
+                                // Replace text
+                                text.OptionText = translations[text.OptionText];
+                                patched_Base.Add(text, text.OptionText);
+                            }
+                        });
+                    }
+                }
+                frame = 0;
             }
         }
     }
