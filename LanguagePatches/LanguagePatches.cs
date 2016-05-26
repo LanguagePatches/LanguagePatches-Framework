@@ -64,7 +64,7 @@ namespace LanguagePatches
 
         private Dictionary<TextMesh, String> patched_Mesh { get; set; }
         private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
-        private Dictionary<PopupDialog, String> patched_Dialog { get; set; }
+        private List<String> urls { get; set; }   
         private Dictionary<GameScenes, Logger> loggers { get; set; }
 
         /// <summary>
@@ -125,6 +125,27 @@ namespace LanguagePatches
                     bundle.Unload(false);
                 }
                 fontSize.Add(name, new KeyValuePair<Int32, Int32>(meshSize, textSize));
+            }
+
+            // Load URLS
+            if (config.HasNode("URLS"))
+            {
+                ConfigNode uNode = config.GetNode("URLS");
+                urls = new List<String>
+                {
+                    uNode.HasValue("KSPsiteURL") ? uNode.GetValue("KSPsiteURL") : null,
+                    uNode.HasValue("SpaceportURL") ? uNode.GetValue("SpaceportURL") : null,
+                    uNode.HasValue("DefaultFlagURL") ? uNode.GetValue("DefaultFlagURL") : null
+                };
+                GameEvents.onGameSceneLoadRequested.Add(scene =>
+                {
+                    if (scene != GameScenes.MAINMENU)
+                        return;
+                    MainMenu menu = FindObjectOfType<MainMenu>();
+                    menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
+                    menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
+                    menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
+                });
             }
 
             // Load case sensivity
