@@ -55,6 +55,7 @@ namespace LanguagePatches
         /// Fonts, either loaded from Unity Asset Bundles or from the OS
         /// </summary>
         public Dictionary<String, Font> fonts { get; set; }
+        public Dictionary<String, KeyValuePair<Int32, Int32>> fontSize { get; set; } 
 
         /// <summary>
         /// Patched UI elements
@@ -90,6 +91,7 @@ namespace LanguagePatches
 
             // Create fonts
             fonts = new Dictionary<String, Font>();
+            fontSize = new Dictionary<String, KeyValuePair<Int32, Int32>>();
 
             // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
@@ -102,23 +104,27 @@ namespace LanguagePatches
             }
 
             // Load the fonts
-            if (config.HasNode("FONTS"))
+            foreach (ConfigNode node in config.GetNodes("FONT"))
             {
-                foreach (ConfigNode.Value value in config.GetNode("FONTS").values)
+                // Vars
+                String name = node.GetValue("name");
+                String file = node.GetValue("file");
+                Int32 meshSize; Int32.TryParse(node.GetValue("meshSize"), out meshSize);
+                Int32 textSize; Int32.TryParse(node.GetValue("textSize"), out textSize);
+
+                String[] split = file.Split(':');
+                if (split[0].ToLowerInvariant() == "os")
                 {
-                    String[] split = value.value.Split(':');
-                    if (split[0].ToLowerInvariant() == "OS")
-                    {
-                        String[] moreSplit = split[1].Split('@');
-                        fonts.Add(value.name, Font.CreateDynamicFontFromOSFont(moreSplit[0], Int32.Parse(moreSplit[1])));
-                    }
-                    else
-                    {
-                        AssetBundle bundle = AssetBundle.CreateFromMemoryImmediate(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
-                        fonts.Add(value.name, Instantiate((bundle.LoadAsset<Font>(split[1]))));
-                        bundle.Unload(true);
-                    }
+                    String[] moreSplit = split[1].Split('@');
+                    fonts.Add(name, Font.CreateDynamicFontFromOSFont(moreSplit[0], Int32.Parse(moreSplit[1])));
                 }
+                else
+                {
+                    AssetBundle bundle = AssetBundle.CreateFromMemoryImmediate(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
+                    fonts.Add(name, bundle.LoadAsset<Font>(split[1]));
+                    bundle.Unload(false);
+                }
+                fontSize.Add(name, new KeyValuePair<Int32, Int32>(meshSize, textSize));
             }
 
             // Load case sensivity
@@ -131,7 +137,6 @@ namespace LanguagePatches
             patched_Text = new Dictionary<Text, String>();
             patched_Mesh = new Dictionary<TextMesh, String>();
             patched_Base = new Dictionary<DialogGUIBase, String>();
-            patched_Dialog = new Dictionary<PopupDialog, String>();
 
             // Logger
             if (debug)
@@ -174,8 +179,15 @@ namespace LanguagePatches
 
                         // Replace text
                         text.text = translations[text.text];
-                        if (fonts.ContainsKey(text.font.name)) text.font = fonts[text.font.name];
-                        patched_Text.Add(text, text.text);
+                        if (fonts.ContainsKey(text.font.name))
+                        {
+                            text.font = fonts[text.font.name];
+                            text.fontSize = text.fontSize != 0 ? fontSize[text.font.name].Value : 0;
+                        }
+                        if (patched_Text.ContainsKey(text))
+                            patched_Text[text] = text.text;
+                        else
+                            patched_Text.Add(text, text.text);
                     }
                 }
                 return;
@@ -194,8 +206,17 @@ namespace LanguagePatches
 
                         // Replace text and font
                         text.text = translations[text.text];
-                        if (fonts.ContainsKey(text.font.name)) text.font = fonts[text.font.name];
-                        patched_Mesh.Add(text, text.text);
+                        if (fonts.ContainsKey(text.font.name))
+                        {
+                            text.font = fonts[text.font.name];
+                            text.fontSize = text.fontSize != 0 ? fontSize[text.font.name].Key : 0;
+                            MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
+                            rend.material.mainTexture = text.font.material.mainTexture;
+                        }
+                        if (patched_Mesh.ContainsKey(text))
+                            patched_Mesh[text] = text.text;
+                        else
+                            patched_Mesh.Add(text, text.text);
                     }
                 }
                 return;
@@ -228,7 +249,10 @@ namespace LanguagePatches
 
                                 // Replace text
                                 text.OptionText = translations[text.OptionText];
-                                patched_Base.Add(text, text.OptionText);
+                                if (patched_Base.ContainsKey(text))
+                                    patched_Base[text] = text.OptionText;
+                                else
+                                    patched_Base.Add(text, text.OptionText);
                             }
                         });
                     }
