@@ -55,7 +55,6 @@ namespace LanguagePatches
         /// Fonts, either loaded from Unity Asset Bundles or from the OS
         /// </summary>
         public Dictionary<String, Font> fonts { get; set; }
-        public Dictionary<String, KeyValuePair<Int32, Int32>> fontSize { get; set; } 
 
         /// <summary>
         /// Patched UI elements
@@ -64,7 +63,7 @@ namespace LanguagePatches
 
         private Dictionary<TextMesh, String> patched_Mesh { get; set; }
         private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
-        private List<String> urls { get; set; }   
+        private List<String> urls { get; set; }
         private Dictionary<GameScenes, Logger> loggers { get; set; }
 
         /// <summary>
@@ -91,7 +90,6 @@ namespace LanguagePatches
 
             // Create fonts
             fonts = new Dictionary<String, Font>();
-            fontSize = new Dictionary<String, KeyValuePair<Int32, Int32>>();
 
             // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
@@ -109,8 +107,6 @@ namespace LanguagePatches
                 // Vars
                 String name = node.GetValue("name");
                 String file = node.GetValue("file");
-                Int32 meshSize; Int32.TryParse(node.GetValue("meshSize"), out meshSize);
-                Int32 textSize; Int32.TryParse(node.GetValue("textSize"), out textSize);
 
                 String[] split = file.Split(':');
                 if (split[0].ToLowerInvariant() == "os")
@@ -124,7 +120,6 @@ namespace LanguagePatches
                     fonts.Add(name, bundle.LoadAsset<Font>(split[1]));
                     bundle.Unload(false);
                 }
-                fontSize.Add(name, new KeyValuePair<Int32, Int32>(meshSize, textSize));
             }
 
             // Load URLS
@@ -133,19 +128,10 @@ namespace LanguagePatches
                 ConfigNode uNode = config.GetNode("URLS");
                 urls = new List<String>
                 {
-                    uNode.HasValue("KSPsiteURL") ? uNode.GetValue("KSPsiteURL") : null,
+                    uNode.HasValue("KSPsiteURL") ? "http://" + uNode.GetValue("KSPsiteURL") : null,
                     uNode.HasValue("SpaceportURL") ? uNode.GetValue("SpaceportURL") : null,
                     uNode.HasValue("DefaultFlagURL") ? uNode.GetValue("DefaultFlagURL") : null
                 };
-                GameEvents.onGameSceneLoadRequested.Add(scene =>
-                {
-                    if (scene != GameScenes.MAINMENU)
-                        return;
-                    MainMenu menu = FindObjectOfType<MainMenu>();
-                    menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
-                    menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
-                    menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
-                });
             }
 
             // Load case sensivity
@@ -167,6 +153,7 @@ namespace LanguagePatches
                 {
                     if (!loggers.ContainsKey(scene)) loggers.Add(scene, new Logger(scene.ToString()));
                     loggers[scene].SetAsActive();
+                    mainMenuPatched = false;
                 });
                 loggers.Add(HighLogic.LoadedScene, new Logger(HighLogic.LoadedScene.ToString()));
                 loggers[HighLogic.LoadedScene].SetAsActive();
@@ -201,10 +188,7 @@ namespace LanguagePatches
                         // Replace text
                         text.text = translations[text.text];
                         if (fonts.ContainsKey(text.font.name))
-                        {
                             text.font = fonts[text.font.name];
-                            text.fontSize = text.fontSize != 0 ? fontSize[text.font.name].Value : 0;
-                        }
                         if (patched_Text.ContainsKey(text))
                             patched_Text[text] = text.text;
                         else
@@ -230,7 +214,6 @@ namespace LanguagePatches
                         if (fonts.ContainsKey(text.font.name))
                         {
                             text.font = fonts[text.font.name];
-                            text.fontSize = text.fontSize != 0 ? fontSize[text.font.name].Key : 0;
                             MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
                             rend.material.mainTexture = text.font.material.mainTexture;
                         }
@@ -278,8 +261,31 @@ namespace LanguagePatches
                         });
                     }
                 }
+                return;
+            }
+
+            // Fourth frame
+            if (frame == 4)
+            {
+                if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched)
+                {
+                    MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>().First();
+                        menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
+                        menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
+                        menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
+
+                        // Update callbacks
+                        typeof (MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, null);
+                        typeof (MainMenu).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+                    mainMenuPatched = true;
+                }
                 frame = 0;
             }
         }
+
+        /// <summary>
+        /// Whether the main menu was already patched
+        /// </summary>
+        private Boolean mainMenuPatched;
     }
 }
