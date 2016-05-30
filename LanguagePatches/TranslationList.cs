@@ -38,7 +38,7 @@ namespace LanguagePatches
                 if (groups.Count == 1)
                     return translation.translation;
                 else
-                    return String.Format(translation.translation, groups.OfType<Group>().Select(g => g.Success ? g.Value : "").ToArray());
+                    return String.Format(translation.translation.Replace("\\n", "\n").Replace("\\r", "\r"), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
             }
         }
 
