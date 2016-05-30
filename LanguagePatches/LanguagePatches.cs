@@ -215,7 +215,8 @@ namespace LanguagePatches
                         {
                             text.font = fonts[text.font.name];
                             MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
-                            rend.material.mainTexture = text.font.material.mainTexture;
+                            if (text?.font?.material?.mainTexture != null)
+                                rend.material.mainTexture = text.font.material.mainTexture;
                         }
                         if (patched_Mesh.ContainsKey(text))
                             patched_Mesh[text] = text.text;
@@ -275,7 +276,7 @@ namespace LanguagePatches
                         menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
 
                         // Update callbacks
-                        typeof (MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, null);
+                        typeof (MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, null);
                         typeof (MainMenu).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
                     mainMenuPatched = true;
                 }
