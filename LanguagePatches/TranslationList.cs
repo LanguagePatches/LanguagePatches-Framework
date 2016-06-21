@@ -7,6 +7,7 @@
  
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -27,18 +28,18 @@ namespace LanguagePatches
             get
             {
                 // Get the matching translation
-                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, "^" + t.text + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
+                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, "^" + t.text.Replace(@"\n", "\n").Replace(@"\r", "\r") + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
 
                 // Null check
                 if (translation == null || (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene))
                     return text;
 
                 // Get the regex matches and create the return string
-                GroupCollection groups = Regex.Match(text, "^" + translation.text + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
+                GroupCollection groups = Regex.Match(text, "^" + translation.text.Replace(@"\n", "\n").Replace(@"\r", "\r") + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
                 if (groups.Count == 1)
-                    return translation.translation;
+                    return translation.translation.Replace(@"\n", "\n").Replace(@"\r", "\r");
                 else
-                    return String.Format(translation.translation.Replace("\\n", "\n").Replace("\\r", "\r"), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
+                    return String.Format(translation.translation.Replace(@"\n", "\n").Replace(@"\r", "\r"), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
             }
         }
 

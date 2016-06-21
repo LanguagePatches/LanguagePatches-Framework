@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Reflection.Emit;
 using UnityEngine.Assertions.Must;
+using Object = System.Object;
 
 namespace LanguagePatches
 {
@@ -81,7 +82,12 @@ namespace LanguagePatches
             if (nodes.Length > 1)
             {
                 for (Int32 i = 1; i < nodes.Length; i++)
-                    nodes[0].AddData(nodes[i]);
+                {
+                    foreach (ConfigNode n in nodes[i].nodes)
+                        nodes[0].AddNode(n);
+                    foreach (ConfigNode.Value v in nodes[i].values)
+                        nodes[0].AddValue(v.name, v.value, v.comment);
+                }
             }
             config = nodes[0];
 
@@ -239,7 +245,6 @@ namespace LanguagePatches
 
                     // Translate the texts
                     dialog.dialogToDisplay.title = translations[dialog.dialogToDisplay.title];
-                    Debug.Log(dialog.dialogToDisplay.title);
                     dialog.dialogToDisplay.message = translations[dialog.dialogToDisplay.message];
 
                     // Patch the Dialog Options
@@ -254,6 +259,8 @@ namespace LanguagePatches
 
                                 // Replace text
                                 text.OptionText = translations[text.OptionText];
+                                if (text is DialogGUIButton)
+                                    (text as DialogGUIButton).GetString = () => text.OptionText;
                                 if (patched_Base.ContainsKey(text))
                                     patched_Base[text] = text.OptionText;
                                 else
