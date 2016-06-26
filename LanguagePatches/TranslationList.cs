@@ -28,18 +28,15 @@ namespace LanguagePatches
             get
             {
                 // Get the matching translation
-                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, "^" + t.text.Replace(@"\n", "\n").Replace(@"\r", "\r") + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
+                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, "^" + Prepare(t.text) + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
 
                 // Null check
                 if (translation == null || (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene))
                     return text;
 
                 // Get the regex matches and create the return string
-                GroupCollection groups = Regex.Match(text, "^" + translation.text.Replace(@"\n", "\n").Replace(@"\r", "\r") + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
-                if (groups.Count == 1)
-                    return translation.translation.Replace(@"\n", "\n").Replace(@"\r", "\r");
-                else
-                    return String.Format(translation.translation.Replace(@"\n", "\n").Replace(@"\r", "\r"), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
+                GroupCollection groups = Regex.Match(text, "^" + Prepare(translation.text) + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
+                return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
             }
         }
 
@@ -50,6 +47,14 @@ namespace LanguagePatches
         {
             foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
                 Add(new Translation(translation));
+        }
+
+        /// <summary>
+        /// Modifies a string to be useable
+        /// </summary>
+        public String Prepare(String input)
+        {
+            return input.Replace(@"\n", "\n").Replace(@"\r", "\r");
         }
     }
 }
