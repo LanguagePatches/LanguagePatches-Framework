@@ -6,17 +6,12 @@
  */
 
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using KSP.UI;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Reflection.Emit;
-using UnityEngine.Assertions.Must;
-using Object = System.Object;
 
 namespace LanguagePatches
 {
@@ -168,9 +163,156 @@ namespace LanguagePatches
         }
 
         /// <summary>
+        /// Updates Unity UI components
+        /// </summary>
+        public void UpdateText()
+        {
+            // Patch all Unity UI Texts
+            foreach (Text text in Resources.FindObjectsOfTypeAll<Text>().Where(text => !patched_Text.ContainsKey(text) || (patched_Text.ContainsKey(text) && patched_Text[text] != text.text)))
+            {
+                // Log
+                if (debug) Logger.Active.Log(text.text);
+
+                // Replace text
+                text.text = translations[text.text];
+                if (fonts.ContainsKey(text.font.name))
+                    text.font = fonts[text.font.name];
+                if (patched_Text.ContainsKey(text))
+                    patched_Text[text] = text.text;
+                else
+                    patched_Text.Add(text, text.text);
+            }
+        }
+
+        /// <summary>
+        /// Updates Unity textmeshes
+        /// </summary>
+        public void UpdateTextMesh()
+        {
+            // Patch all TextMeshs
+            foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>().Where(text => !patched_Mesh.ContainsKey(text) || (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text)))
+            {
+                // Log
+                if (debug) Logger.Active.Log(text.text);
+
+                // Replace text and font
+                text.text = translations[text.text];
+                if (fonts.ContainsKey(text.font.name))
+                {
+                    text.font = fonts[text.font.name];
+                    MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
+                    if (text?.font?.material?.mainTexture != null)
+                        rend.material.mainTexture = text.font.material.mainTexture;
+                }
+                if (patched_Mesh.ContainsKey(text))
+                    patched_Mesh[text] = text.text;
+                else
+                    patched_Mesh.Add(text, text.text);
+            }
+        }
+
+        /// <summary>
+        /// Updates the Popup Dialoges
+        /// </summary>
+        public void PopupDialogUpdate()
+        {
+            // Patch all PopupDialogs
+            foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>().Where(dialog => dialog?.dialogToDisplay != null))
+            {
+                // Translate the texts
+                dialog.dialogToDisplay.title = translations[dialog.dialogToDisplay.title];
+                dialog.dialogToDisplay.message = translations[dialog.dialogToDisplay.message];
+
+                // Patch the Dialog Options
+                foreach (DialogGUIBase guiBase in dialog.dialogToDisplay.Options)
+                {
+                    Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
+                    {
+                        if (!patched_Base.ContainsKey(text) || (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText && !Utility.CompareDialog(text, patched_Base[text])))
+                        {
+                            // Log
+                            if (debug) Logger.Active.Log(text.OptionText);
+
+                            // Replace text
+                            if (text is DialogGUIButton)
+                            {
+                                DialogGUIButton gui = ((DialogGUIButton)text);
+                                if (gui.GetString != null)
+                                {
+                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method) as Func<String>;
+                                    gui.GetString = () => translations[value()];
+                                }
+                                else
+                                {
+                                    gui.OptionText = translations[gui.OptionText];
+                                }
+                            }
+                            else if (text is DialogGUIToggle)
+                            {
+                                DialogGUIToggle gui = ((DialogGUIToggle)text);
+                                if (gui.setLabel != null)
+                                {
+                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.setLabel.Target, gui.setLabel.Method) as Func<String>;
+                                    gui.setLabel = () => translations[value()];
+                                }
+                                else
+                                {
+                                    gui.label = gui.OptionText = translations[gui.OptionText];
+                                }
+                            }
+                            else if (text is DialogGUILabel)
+                            {
+                                DialogGUILabel gui = ((DialogGUILabel)text);
+                                if (gui.GetString != null)
+                                {
+                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method) as Func<String>;
+                                    gui.GetString = () => translations[value()];
+                                }
+                                else
+                                {
+                                    gui.OptionText = translations[gui.OptionText];
+                                }
+                            }
+                            else if (!String.IsNullOrEmpty(text.OptionText))
+                                text.OptionText = translations[text.OptionText];
+                            if (patched_Base.ContainsKey(text))
+                                patched_Base[text] = text.OptionText;
+                            else
+                                patched_Base.Add(text, text.OptionText);
+                        }
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Does Scene Maintainance
+        /// </summary>
+        public void SceneUpdate()
+        {
+            if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched)
+            {
+                MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>().First();
+                menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
+                menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
+                menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
+
+                // Update callbacks
+                typeof(MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, null);
+                typeof(MainMenu).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
+                mainMenuPatched = true;
+            }
+        }
+
+        /// <summary>
         /// The current frame
         /// </summary>
         private Byte frame;
+
+        /// <summary>
+        /// Whether the main menu was already patched
+        /// </summary>
+        private Boolean mainMenuPatched;
 
         /// <summary>
         /// Updates the ingame texts
@@ -180,120 +322,13 @@ namespace LanguagePatches
             // Update
             frame++;
 
-            // First frame
-            if (frame == 1)
-            {
-                // Patch all Unity UI Texts
-                foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
-                {
-                    if (!patched_Text.ContainsKey(text) || (patched_Text.ContainsKey(text) && patched_Text[text] != text.text))
-                    {
-                        // Log
-                        if (debug) Logger.Active.Log(text.text);
-
-                        // Replace text
-                        text.text = translations[text.text];
-                        if (fonts.ContainsKey(text.font.name))
-                            text.font = fonts[text.font.name];
-                        if (patched_Text.ContainsKey(text))
-                            patched_Text[text] = text.text;
-                        else
-                            patched_Text.Add(text, text.text);
-                    }
-                }
-                return;
-            }
-
-            // Second Frame
-            if (frame == 2)
-            {
-                // Patch all TextMeshs
-                foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
-                {
-                    if (!patched_Mesh.ContainsKey(text) || (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text))
-                    {
-                        // Log
-                        if (debug) Logger.Active.Log(text.text);
-
-                        // Replace text and font
-                        text.text = translations[text.text];
-                        if (fonts.ContainsKey(text.font.name))
-                        {
-                            text.font = fonts[text.font.name];
-                            MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
-                            if (text?.font?.material?.mainTexture != null)
-                                rend.material.mainTexture = text.font.material.mainTexture;
-                        }
-                        if (patched_Mesh.ContainsKey(text))
-                            patched_Mesh[text] = text.text;
-                        else
-                            patched_Mesh.Add(text, text.text);
-                    }
-                }
-                return;
-            }
-
-            // Third Frame
-            if (frame == 3)
-            {
-                // Patch all PopupDialogs
-                foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
-                {
-                    // Null check
-                    if (dialog?.dialogToDisplay == null)
-                        continue;
-
-                    // Translate the texts
-                    dialog.dialogToDisplay.title = translations[dialog.dialogToDisplay.title];
-                    dialog.dialogToDisplay.message = translations[dialog.dialogToDisplay.message];
-
-                    // Patch the Dialog Options
-                    foreach (DialogGUIBase guiBase in dialog.dialogToDisplay.Options)
-                    {
-                        Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
-                        {
-                            if (!patched_Base.ContainsKey(text) || (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText))
-                            {
-                                // Log
-                                if (debug) Logger.Active.Log(text.OptionText);
-
-                                // Replace text
-                                text.OptionText = translations[text.OptionText];
-                                if (text is DialogGUIButton)
-                                    (text as DialogGUIButton).GetString = () => text.OptionText;
-                                if (patched_Base.ContainsKey(text))
-                                    patched_Base[text] = text.OptionText;
-                                else
-                                    patched_Base.Add(text, text.OptionText);
-                            }
-                        });
-                    }
-                }
-                return;
-            }
+            // Frames
+            UpdateText(); PopupDialogUpdate();
+            UpdateTextMesh(); SceneUpdate();
 
             // Fourth frame
-            if (frame == 4)
-            {
-                if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched)
-                {
-                    MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>().First();
-                        menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
-                        menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
-                        menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
-
-                        // Update callbacks
-                        typeof (MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, null);
-                        typeof (MainMenu).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
-                    mainMenuPatched = true;
-                }
+            if (frame == 2)  
                 frame = 0;
-            }
         }
-
-        /// <summary>
-        /// Whether the main menu was already patched
-        /// </summary>
-        private Boolean mainMenuPatched;
     }
 }

@@ -35,5 +35,29 @@ namespace LanguagePatches
         {
             DoRecursive<T, Object>(start, selector, tout => false, tin => { action(tin); return null; });
         }
+
+        /// <summary>
+        /// Compares the return of a dialog button with the cache
+        /// </summary>
+        public static Boolean CompareDialog(DialogGUIBase text, String cache)
+        {
+            // Replace text
+            if (text is DialogGUIButton)
+            {
+                DialogGUIButton gui = ((DialogGUIButton) text);
+                return gui.GetString?.Invoke() == cache;
+            }
+            if (text is DialogGUIToggle)
+            {
+                DialogGUIToggle gui = ((DialogGUIToggle) text);
+                return gui.setLabel?.Invoke() == cache;
+            }
+            if (text is DialogGUILabel)
+            {
+                DialogGUILabel gui = ((DialogGUILabel) text);
+                return gui.GetString?.Invoke() == cache;
+            }
+            return false;
+        }
     }
 }
