@@ -33,6 +33,11 @@ namespace LanguagePatches
         public TranslationList translations { get; set; }
 
         /// <summary>
+        /// Images that contain translated texts
+        /// </summary>
+        public Dictionary<String, Texture2D> images { get; set; } 
+
+        /// <summary>
         /// The configuration for the framework
         /// </summary>
         public ConfigNode config { get; set; }
@@ -52,15 +57,16 @@ namespace LanguagePatches
         /// </summary>
         public Dictionary<String, Font> fonts { get; set; }
 
+        #region UI
         /// <summary>
         /// Patched UI elements
         /// </summary>
         private Dictionary<Text, String> patched_Text { get; set; }
-
         private Dictionary<TextMesh, String> patched_Mesh { get; set; }
         private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
         private List<String> urls { get; set; }
         private Dictionary<GameScenes, Logger> loggers { get; set; }
+        #endregion
 
         /// <summary>
         /// Load the configs when the game has started
@@ -92,6 +98,9 @@ namespace LanguagePatches
             // Create fonts
             fonts = new Dictionary<String, Font>();
 
+            // Create images
+            images = new Dictionary<String, Texture2D>();
+
             // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
 
@@ -121,6 +130,15 @@ namespace LanguagePatches
                     fonts.Add(name, bundle.LoadAsset<Font>(split[1]));
                     bundle.Unload(false);
                 }
+            }
+
+            // Load images
+            foreach (ConfigNode node in config.GetNodes("IMAGE"))
+            {
+                String original = node.GetValue("name");
+                String file = node.GetValue("file");
+                Texture2D texture = GameDatabase.Instance.GetTexture(file, false);
+                images.Add(original, texture);
             }
 
             // Load URLS
@@ -181,6 +199,22 @@ namespace LanguagePatches
                     patched_Text[text] = text.text;
                 else
                     patched_Text.Add(text, text.text);
+            }
+        }
+
+        /// <summary>
+        /// Updates Textures
+        /// </summary>
+        public void UpdateImages()
+        {
+            // Patch all Unity UI Texts
+            foreach (Material mat in Resources.FindObjectsOfTypeAll<Material>().Where(mat => images.All(s => s.Value.name != mat.mainTexture.name)))
+            {
+                // Log
+                if (debug) Logger.Active.Log("[IMAGE] " + mat.mainTexture.name);
+
+                // Replace text
+                mat.mainTexture = images[mat.mainTexture.name];
             }
         }
 
@@ -305,11 +339,6 @@ namespace LanguagePatches
         }
 
         /// <summary>
-        /// The current frame
-        /// </summary>
-        private Byte frame;
-
-        /// <summary>
         /// Whether the main menu was already patched
         /// </summary>
         private Boolean mainMenuPatched;
@@ -319,16 +348,11 @@ namespace LanguagePatches
         /// </summary>
         void Update()
         {
-            // Update
-            frame++;
 
             // Frames
             UpdateText(); PopupDialogUpdate();
             UpdateTextMesh(); SceneUpdate();
-
-            // Fourth frame
-            if (frame == 2)  
-                frame = 0;
+            UpdateImages();
         }
     }
 }
