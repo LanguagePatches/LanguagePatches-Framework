@@ -1,10 +1,10 @@
-﻿/** 
+﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
  * Copyright (c) 2016 Thomas P.
  * Licensed under the terms of the MIT License
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,8 +16,11 @@ namespace LanguagePatches
     /// <summary>
     /// A List that contains translations and that can translate texts
     /// </summary>
-    public class TranslationList : List<Translation>
+    public class TranslationList : HashSet<Translation>
     {
+        // Some caching for strings
+        private List<Object> cache = new List<Object>();
+
         /// <summary>
         /// Translates a string based on the translations stored in this list
         /// </summary>
@@ -27,23 +30,38 @@ namespace LanguagePatches
         {
             get
             {
-                // Get the matching translation
-                Translation translation = this.FirstOrDefault(t => Regex.IsMatch(text, "^" + Prepare(t.text) + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None));
+                // Check translations
+                foreach (Translation translation in this)
+                {
+                    // Scene doesnt match
+                    if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                        continue;
 
-                // Null check
-                if (translation == null || (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene))
-                    return text;
+                    // Get matches
+                    String prepared = Prepare(translation.text);
+                    Match match = Regex.Match(text, "^" + prepared + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
 
-                // Get the regex matches and create the return string
-                GroupCollection groups = Regex.Match(text, "^" + Prepare(translation.text) + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None).Groups;
-                return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), groups.OfType<Group>().Select(g => g.Success ? g.Value : ")").ToArray());
+                    // Check the match
+                    if (!match.Success)
+                        continue;
+
+                    // Get the regex matches and create the return string
+                    GroupCollection groups = match.Groups;
+                    cache.Clear();
+                    for (Int32 i = 0; i < groups.Count; i++)
+                        cache.Add(groups[i].Value);
+                    return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), cache.ToArray());
+                }
+
+                // Nothing found
+                return text;
             }
         }
 
         /// <summary>
         /// Creates a new list and fills it with values from a new config node
         /// </summary>
-        public TranslationList(ConfigNode node) : base()
+        public TranslationList(ConfigNode node)
         {
             foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
                 Add(new Translation(translation));

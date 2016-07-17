@@ -1,4 +1,4 @@
-﻿/** 
+﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
  * Copyright (c) 2016 Thomas P.
@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace LanguagePatches
     /// to translate the Games UI.
     /// </summary>
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
-    public class LanguagePatches : MonoBehaviour
+    public class LanguagePatches : AsyncMonoBehaviour
     {
         /// <summary>
         /// The currently active Language Controller
@@ -35,7 +36,7 @@ namespace LanguagePatches
         /// <summary>
         /// Images that contain translated texts
         /// </summary>
-        public Dictionary<String, Texture2D> images { get; set; } 
+        public Dictionary<String, Texture2D> images { get; set; }
 
         /// <summary>
         /// The configuration for the framework
@@ -178,6 +179,12 @@ namespace LanguagePatches
                 loggers[HighLogic.LoadedScene].SetAsActive();
             }
 
+            // Register Updates
+            RegisterTask(Method.UPDATE, UpdateText);
+            RegisterTask(Method.UPDATE, UpdateTextMesh);
+            RegisterTask(Method.UPDATE, PopupDialogUpdate);
+            RegisterTask(Method.UPDATE, SceneUpdate);
+            RegisterTask(Method.UPDATE, UpdateImages);
         }
 
         /// <summary>
@@ -186,8 +193,12 @@ namespace LanguagePatches
         public void UpdateText()
         {
             // Patch all Unity UI Texts
-            foreach (Text text in Resources.FindObjectsOfTypeAll<Text>().Where(text => !patched_Text.ContainsKey(text) || (patched_Text.ContainsKey(text) && patched_Text[text] != text.text)))
+            foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
             {
+                // Already edited
+                if (patched_Text.ContainsKey(text) && patched_Text[text] == text.text)
+                    continue;
+
                 // Log
                 if (debug) Logger.Active.Log(text.text);
 
@@ -207,14 +218,21 @@ namespace LanguagePatches
         /// </summary>
         public void UpdateImages()
         {
-            // Patch all Unity UI Texts
-            foreach (Material mat in Resources.FindObjectsOfTypeAll<Material>().Where(mat => images.All(s => s.Value.name != mat.mainTexture.name)))
+            // Patch all Unity UI Images
+            foreach (Material mat in Resources.FindObjectsOfTypeAll<Material>())
             {
+                // Already edited
+                if (images.Any(s => s.Value.name == mat.mainTexture?.name))
+                    continue;
+                if (mat.mainTexture == null)
+                    continue;
+
                 // Log
                 if (debug) Logger.Active.Log("[IMAGE] " + mat.mainTexture.name);
 
-                // Replace text
-                mat.mainTexture = images[mat.mainTexture.name];
+                // Replace image
+                if (images.ContainsKey(mat.mainTexture.name))
+                    mat.mainTexture = images[mat.mainTexture.name];
             }
         }
 
@@ -224,8 +242,12 @@ namespace LanguagePatches
         public void UpdateTextMesh()
         {
             // Patch all TextMeshs
-            foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>().Where(text => !patched_Mesh.ContainsKey(text) || (patched_Mesh.ContainsKey(text) && patched_Mesh[text] != text.text)))
+            foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
             {
+                // Already edited
+                if (patched_Mesh.ContainsKey(text) && patched_Mesh[text] == text.text)
+                    continue;
+
                 // Log
                 if (debug) Logger.Active.Log(text.text);
 
@@ -235,7 +257,7 @@ namespace LanguagePatches
                 {
                     text.font = fonts[text.font.name];
                     MeshRenderer rend = text.GetComponentInChildren<MeshRenderer>();
-                    if (text?.font?.material?.mainTexture != null)
+                    if (text.font?.material?.mainTexture != null)
                         rend.material.mainTexture = text.font.material.mainTexture;
                 }
                 if (patched_Mesh.ContainsKey(text))
@@ -251,8 +273,12 @@ namespace LanguagePatches
         public void PopupDialogUpdate()
         {
             // Patch all PopupDialogs
-            foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>().Where(dialog => dialog?.dialogToDisplay != null))
+            foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
             {
+                // Dialog is null
+                if (dialog?.dialogToDisplay == null)
+                    continue;
+
                 // Translate the texts
                 dialog.dialogToDisplay.title = translations[dialog.dialogToDisplay.title];
                 dialog.dialogToDisplay.message = translations[dialog.dialogToDisplay.message];
@@ -326,7 +352,7 @@ namespace LanguagePatches
         {
             if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched)
             {
-                MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>().First();
+                MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>()[0];
                 menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;
                 menu.SpaceportURL = urls[1] ?? menu.SpaceportURL;
                 menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
@@ -342,17 +368,5 @@ namespace LanguagePatches
         /// Whether the main menu was already patched
         /// </summary>
         private Boolean mainMenuPatched;
-
-        /// <summary>
-        /// Updates the ingame texts
-        /// </summary>
-        void Update()
-        {
-
-            // Frames
-            UpdateText(); PopupDialogUpdate();
-            UpdateTextMesh(); SceneUpdate();
-            UpdateImages();
-        }
     }
 }
