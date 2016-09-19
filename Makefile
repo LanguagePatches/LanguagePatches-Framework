@@ -14,7 +14,7 @@ CODE := $(CURRENT_DIR)/LanguagePatches
 
 # Assembly References
 CORLIB := $(MONO_ASSEMBLIES)/mscorlib.dll,$(MONO_ASSEMBLIES)/System.dll,$(MONO_ASSEMBLIES)/System.Core.dll
-REFS := $(CORLIB),Assembly-CSharp.dll,Assembly-CSharp-firstpass.dll,KSPUtil.dll,UnityEngine.dll,UnityEngine.UI.dll
+REFS := $(CORLIB),Assembly-CSharp.dll,UnityEngine.dll,UnityEngine.UI.dll
 
 # Zip File
 ZIP_NAME := LanguagePatches-$(shell git describe --tags)-$(shell date "+%Y-%m-%d").zip
