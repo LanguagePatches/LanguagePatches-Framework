@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -16,7 +17,7 @@ namespace LanguagePatches
     /// <summary>
     /// A List that contains translations and that can translate texts
     /// </summary>
-    public class TranslationList : HashSet<Translation>
+    public class TranslationList : List<Translation>
     {
         // Some caching for strings
         private List<Object> cache = new List<Object>();
@@ -31,9 +32,10 @@ namespace LanguagePatches
             get
             {
                 // Check translations
-                foreach (Translation translation in this)
+                for (Int32 j = 0; j < Count; j++)
                 {
                     // Scene doesnt match
+                    Translation translation = base[j];
                     if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
                         continue;
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -64,6 +65,7 @@ namespace LanguagePatches
         /// </summary>
         private Dictionary<Text, String> patched_Text { get; set; }
         private Dictionary<TextMesh, String> patched_Mesh { get; set; }
+        private Dictionary<TMPro.TMP_Text, String> patched_TMP { get; set; }
         private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
         private List<String> urls { get; set; }
         private Dictionary<GameScenes, Logger> loggers { get; set; }
@@ -127,20 +129,23 @@ namespace LanguagePatches
                 }
                 else
                 {
-                    AssetBundle bundle = AssetBundle.CreateFromMemoryImmediate(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
+                    AssetBundle bundle = AssetBundle.LoadFromMemory(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
                     fonts.Add(name, bundle.LoadAsset<Font>(split[1]));
                     bundle.Unload(false);
                 }
             }
 
             // Load images
-            foreach (ConfigNode node in config.GetNodes("IMAGE"))
+            GameEvents.OnGameDatabaseLoaded.Add(() =>
             {
-                String original = node.GetValue("name");
-                String file = node.GetValue("file");
-                Texture2D texture = GameDatabase.Instance.GetTexture(file, false);
-                images.Add(original, texture);
-            }
+                foreach (ConfigNode node in config.GetNodes("IMAGE"))
+                {
+                    String original = node.GetValue("name");
+                    String file = node.GetValue("file");
+                    Texture2D texture = GameDatabase.Instance.GetTexture(file, false);
+                    images.Add(original, texture);
+                }
+            });
 
             // Load URLS
             if (config.HasNode("URLS"))
@@ -149,7 +154,7 @@ namespace LanguagePatches
                 urls = new List<String>
                 {
                     uNode.HasValue("KSPsiteURL") ? "http://" + uNode.GetValue("KSPsiteURL") : null,
-                    uNode.HasValue("SpaceportURL") ? uNode.GetValue("SpaceportURL") : null,
+                    uNode.HasValue("SpaceportURL") ? "http://" + uNode.GetValue("SpaceportURL") : null,
                     uNode.HasValue("DefaultFlagURL") ? uNode.GetValue("DefaultFlagURL") : null
                 };
             }
@@ -163,6 +168,7 @@ namespace LanguagePatches
             // Internals
             patched_Text = new Dictionary<Text, String>();
             patched_Mesh = new Dictionary<TextMesh, String>();
+            patched_TMP = new Dictionary<TMP_Text, String>();
             patched_Base = new Dictionary<DialogGUIBase, String>();
 
             // Logger
@@ -182,6 +188,7 @@ namespace LanguagePatches
             // Register Updates
             RegisterTask(Method.UPDATE, UpdateText);
             RegisterTask(Method.UPDATE, UpdateTextMesh);
+            RegisterTask(Method.UPDATE, UpdateTextMeshPro);
             RegisterTask(Method.UPDATE, PopupDialogUpdate);
             RegisterTask(Method.UPDATE, SceneUpdate);
             RegisterTask(Method.UPDATE, UpdateImages);
@@ -222,7 +229,7 @@ namespace LanguagePatches
             foreach (Material mat in Resources.FindObjectsOfTypeAll<Material>())
             {
                 // Already edited
-                if (images.Any(s => s.Value.name == mat.mainTexture?.name))
+                if (images.Any(s => s.Value?.name == mat.mainTexture?.name))
                     continue;
                 if (mat.mainTexture == null)
                     continue;
@@ -232,7 +239,10 @@ namespace LanguagePatches
 
                 // Replace image
                 if (images.ContainsKey(mat.mainTexture.name))
+                {
                     mat.mainTexture = images[mat.mainTexture.name];
+                    DontDestroyOnLoad(mat);
+                }
             }
         }
 
@@ -264,6 +274,30 @@ namespace LanguagePatches
                     patched_Mesh[text] = text.text;
                 else
                     patched_Mesh.Add(text, text.text);
+            }
+        }
+
+        /// <summary>
+        /// Updates Unity textmeshes
+        /// </summary>
+        public void UpdateTextMeshPro()
+        {
+            // Patch all TextMeshs
+            foreach (TMP_Text text in Resources.FindObjectsOfTypeAll<TMP_Text>())
+            {
+                // Already edited
+                if (patched_TMP.ContainsKey(text) && patched_TMP[text] == text.text)
+                    continue;
+
+                // Log
+                if (debug) Logger.Active.Log(text.text);
+
+                // Replace text and font
+                text.text = translations[text.text];
+                if (patched_TMP.ContainsKey(text))
+                    patched_TMP[text] = text.text;
+                else
+                    patched_TMP.Add(text, text.text);
             }
         }
 
