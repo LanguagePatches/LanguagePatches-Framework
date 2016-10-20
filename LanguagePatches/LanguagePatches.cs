@@ -59,17 +59,12 @@ namespace LanguagePatches
         /// </summary>
         public Dictionary<String, Font> fonts { get; set; }
 
-        #region UI
         /// <summary>
         /// Patched UI elements
         /// </summary>
-        private Dictionary<Text, String> patched_Text { get; set; }
-        private Dictionary<TextMesh, String> patched_Mesh { get; set; }
-        private Dictionary<TMPro.TMP_Text, String> patched_TMP { get; set; }
-        private Dictionary<DialogGUIBase, String> patched_Base { get; set; }
+        private CombinedDictionary patched { get; set; }
         private List<String> urls { get; set; }
         private Dictionary<GameScenes, Logger> loggers { get; set; }
-        #endregion
 
         /// <summary>
         /// Load the configs when the game has started
@@ -93,7 +88,8 @@ namespace LanguagePatches
                         nodes[0].AddValue(v.name, v.value, v.comment);
                 }
             }
-            config = nodes[0];
+            if (nodes.Length == 1)
+                config = nodes[0];
 
             // Create a new Translation list from the node
             translations = new TranslationList(config);
@@ -106,6 +102,21 @@ namespace LanguagePatches
 
             // Prevent this class from getting destroyed
             DontDestroyOnLoad(this);
+
+            // Internals
+            patched = new CombinedDictionary();
+
+            // Register Updates
+            RegisterTask(Method.UPDATE, UpdateText);
+            RegisterTask(Method.UPDATE, UpdateTextMesh);
+            RegisterTask(Method.UPDATE, UpdateTextMeshPro);
+            RegisterTask(Method.UPDATE, PopupDialogUpdate);
+            RegisterTask(Method.UPDATE, SceneUpdate);
+            RegisterTask(Method.UPDATE, UpdateImages);
+
+            // Nullcheck 
+            if (config == null)
+                return;
 
             // Override loading hints
             if (config.HasNode("HINTS"))
@@ -165,12 +176,6 @@ namespace LanguagePatches
             // Get debug mode
             Boolean.TryParse(config.GetValue("debug"), out debug);
 
-            // Internals
-            patched_Text = new Dictionary<Text, String>();
-            patched_Mesh = new Dictionary<TextMesh, String>();
-            patched_TMP = new Dictionary<TMP_Text, String>();
-            patched_Base = new Dictionary<DialogGUIBase, String>();
-
             // Logger
             if (debug)
             {
@@ -184,14 +189,6 @@ namespace LanguagePatches
                 loggers.Add(HighLogic.LoadedScene, new Logger(HighLogic.LoadedScene.ToString()));
                 loggers[HighLogic.LoadedScene].SetAsActive();
             }
-
-            // Register Updates
-            RegisterTask(Method.UPDATE, UpdateText);
-            RegisterTask(Method.UPDATE, UpdateTextMesh);
-            RegisterTask(Method.UPDATE, UpdateTextMeshPro);
-            RegisterTask(Method.UPDATE, PopupDialogUpdate);
-            RegisterTask(Method.UPDATE, SceneUpdate);
-            RegisterTask(Method.UPDATE, UpdateImages);
         }
 
         /// <summary>
@@ -203,20 +200,20 @@ namespace LanguagePatches
             foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
             {
                 // Already edited
-                if (patched_Text.ContainsKey(text) && patched_Text[text] == text.text)
+                if (patched.Contains(text, text.text))
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log(text.text);
+                if (debug) Logger.Active.Log("[TXT]" + text.text);
 
                 // Replace text
                 text.text = translations[text.text];
                 if (fonts.ContainsKey(text.font.name))
                     text.font = fonts[text.font.name];
-                if (patched_Text.ContainsKey(text))
-                    patched_Text[text] = text.text;
+                if (patched.Contains<Text, String>(text))
+                    patched.Set(text, text.text);
                 else
-                    patched_Text.Add(text, text.text);
+                    patched.Add(text, text.text);
             }
         }
 
@@ -233,9 +230,6 @@ namespace LanguagePatches
                     continue;
                 if (mat.mainTexture == null)
                     continue;
-
-                // Log
-                if (debug) Logger.Active.Log("[IMAGE] " + mat.mainTexture.name);
 
                 // Replace image
                 if (images.ContainsKey(mat.mainTexture.name))
@@ -255,11 +249,11 @@ namespace LanguagePatches
             foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
             {
                 // Already edited
-                if (patched_Mesh.ContainsKey(text) && patched_Mesh[text] == text.text)
+                if (patched.Contains(text, text.text))
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log(text.text);
+                if (debug) Logger.Active.Log("[TMS]" + text.text);
 
                 // Replace text and font
                 text.text = translations[text.text];
@@ -270,10 +264,10 @@ namespace LanguagePatches
                     if (text.font?.material?.mainTexture != null)
                         rend.material.mainTexture = text.font.material.mainTexture;
                 }
-                if (patched_Mesh.ContainsKey(text))
-                    patched_Mesh[text] = text.text;
+                if (patched.Contains<TextMesh, String>(text))
+                    patched.Set(text, text.text);
                 else
-                    patched_Mesh.Add(text, text.text);
+                    patched.Add(text, text.text);
             }
         }
 
@@ -286,18 +280,18 @@ namespace LanguagePatches
             foreach (TMP_Text text in Resources.FindObjectsOfTypeAll<TMP_Text>())
             {
                 // Already edited
-                if (patched_TMP.ContainsKey(text) && patched_TMP[text] == text.text)
+                if (patched.Contains(text, text.text))
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log(text.text);
+                if (debug) Logger.Active.Log("[TMP]" + text.text);
 
                 // Replace text and font
                 text.text = translations[text.text];
-                if (patched_TMP.ContainsKey(text))
-                    patched_TMP[text] = text.text;
+                if (patched.Contains<TMP_Text, String>(text))
+                    patched.Set(text, text.text);
                 else
-                    patched_TMP.Add(text, text.text);
+                    patched.Add(text, text.text);
             }
         }
 
@@ -322,58 +316,60 @@ namespace LanguagePatches
                 {
                     Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
                     {
-                        if (!patched_Base.ContainsKey(text) || (patched_Base.ContainsKey(text) && patched_Base[text] != text.OptionText && !Utility.CompareDialog(text, patched_Base[text])))
-                        {
-                            // Log
-                            if (debug) Logger.Active.Log(text.OptionText);
+                        if (patched.Contains<DialogGUIBase, String>(text) && 
+                            (!patched.Contains<DialogGUIBase, String>(text) || 
+                              patched.Get<DialogGUIBase, String>(text) == text.OptionText || 
+                              Utility.CompareDialog(text, patched.Get<DialogGUIBase, String>(text)))) return;
 
-                            // Replace text
-                            if (text is DialogGUIButton)
+                        // Log
+                        if (debug) Logger.Active.Log("[PUD]" + text.OptionText);
+
+                        // Replace text
+                        if (text is DialogGUIButton)
+                        {
+                            DialogGUIButton gui = ((DialogGUIButton)text);
+                            if (gui.GetString != null)
                             {
-                                DialogGUIButton gui = ((DialogGUIButton)text);
-                                if (gui.GetString != null)
-                                {
-                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method) as Func<String>;
-                                    gui.GetString = () => translations[value()];
-                                }
-                                else
-                                {
-                                    gui.OptionText = translations[gui.OptionText];
-                                }
+                                Func<String> value = (Func<String>)Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method);
+                                gui.GetString = () => translations[value()];
                             }
-                            else if (text is DialogGUIToggle)
-                            {
-                                DialogGUIToggle gui = ((DialogGUIToggle)text);
-                                if (gui.setLabel != null)
-                                {
-                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.setLabel.Target, gui.setLabel.Method) as Func<String>;
-                                    gui.setLabel = () => translations[value()];
-                                }
-                                else
-                                {
-                                    gui.label = gui.OptionText = translations[gui.OptionText];
-                                }
-                            }
-                            else if (text is DialogGUILabel)
-                            {
-                                DialogGUILabel gui = ((DialogGUILabel)text);
-                                if (gui.GetString != null)
-                                {
-                                    Func<String> value = Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method) as Func<String>;
-                                    gui.GetString = () => translations[value()];
-                                }
-                                else
-                                {
-                                    gui.OptionText = translations[gui.OptionText];
-                                }
-                            }
-                            else if (!String.IsNullOrEmpty(text.OptionText))
-                                text.OptionText = translations[text.OptionText];
-                            if (patched_Base.ContainsKey(text))
-                                patched_Base[text] = text.OptionText;
                             else
-                                patched_Base.Add(text, text.OptionText);
+                            {
+                                gui.OptionText = translations[gui.OptionText];
+                            }
                         }
+                        else if (text is DialogGUIToggle)
+                        {
+                            DialogGUIToggle gui = ((DialogGUIToggle)text);
+                            if (gui.setLabel != null)
+                            {
+                                Func<String> value = (Func<String>)Delegate.CreateDelegate(typeof(Func<String>), gui.setLabel.Target, gui.setLabel.Method);
+                                gui.setLabel = () => translations[value()];
+                            }
+                            else
+                            {
+                                gui.label = gui.OptionText = translations[gui.OptionText];
+                            }
+                        }
+                        else if (text is DialogGUILabel)
+                        {
+                            DialogGUILabel gui = ((DialogGUILabel)text);
+                            if (gui.GetString != null)
+                            {
+                                Func<String> value = (Func<String>)Delegate.CreateDelegate(typeof(Func<String>), gui.GetString.Target, gui.GetString.Method);
+                                gui.GetString = () => translations[value()];
+                            }
+                            else
+                            {
+                                gui.OptionText = translations[gui.OptionText];
+                            }
+                        }
+                        else if (!String.IsNullOrEmpty(text.OptionText))
+                            text.OptionText = translations[text.OptionText];
+                        if (patched.Contains<DialogGUIBase, String>(text))
+                            patched.Set(text, text.OptionText);
+                        else
+                            patched.Add(text, text.OptionText);
                     });
                 }
             }
@@ -384,7 +380,7 @@ namespace LanguagePatches
         /// </summary>
         public void SceneUpdate()
         {
-            if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched)
+            if (HighLogic.LoadedScene == GameScenes.MAINMENU && !mainMenuPatched && urls != null)
             {
                 MainMenu menu = Resources.FindObjectsOfTypeAll<MainMenu>()[0];
                 menu.KSPsiteURL = urls[0] ?? menu.KSPsiteURL;

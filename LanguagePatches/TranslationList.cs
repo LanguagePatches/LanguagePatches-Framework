@@ -65,8 +65,11 @@ namespace LanguagePatches
         /// </summary>
         public TranslationList(ConfigNode node)
         {
-            foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
-                Add(new Translation(translation));
+            if (node != null)
+            {
+                foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
+                    Add(new Translation(translation));
+            }
         }
 
         /// <summary>
