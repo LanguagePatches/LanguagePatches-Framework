@@ -88,7 +88,7 @@ namespace LanguagePatches
                         nodes[0].AddValue(v.name, v.value, v.comment);
                 }
             }
-            if (nodes.Length == 1)
+            if (nodes.Length != 0)
                 config = nodes[0];
 
             // Create a new Translation list from the node
@@ -204,7 +204,7 @@ namespace LanguagePatches
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log("[TXT]" + text.text);
+                if (debug) Logger.Active.Log("[TXT] " + text.text);
 
                 // Replace text
                 text.text = translations[text.text];
@@ -253,7 +253,7 @@ namespace LanguagePatches
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log("[TMS]" + text.text);
+                if (debug) Logger.Active.Log("[TMS] " + text.text);
 
                 // Replace text and font
                 text.text = translations[text.text];
@@ -284,7 +284,7 @@ namespace LanguagePatches
                     continue;
 
                 // Log
-                if (debug) Logger.Active.Log("[TMP]" + text.text);
+                if (debug) Logger.Active.Log("[TMP] " + text.text);
 
                 // Replace text and font
                 text.text = translations[text.text];
