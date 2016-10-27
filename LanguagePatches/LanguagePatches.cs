@@ -196,6 +196,9 @@ namespace LanguagePatches
         /// </summary>
         public void UpdateText()
         {
+            if (HighLogic.LoadedScene == GameScenes.LOADING)
+                return;
+
             // Patch all Unity UI Texts
             foreach (Text text in Resources.FindObjectsOfTypeAll<Text>())
             {
@@ -222,6 +225,9 @@ namespace LanguagePatches
         /// </summary>
         public void UpdateImages()
         {
+            if (HighLogic.LoadedScene == GameScenes.LOADING)
+                return;
+
             // Patch all Unity UI Images
             foreach (Material mat in Resources.FindObjectsOfTypeAll<Material>())
             {
@@ -245,6 +251,9 @@ namespace LanguagePatches
         /// </summary>
         public void UpdateTextMesh()
         {
+            if (HighLogic.LoadedScene == GameScenes.LOADING)
+                return;
+
             // Patch all TextMeshs
             foreach (TextMesh text in Resources.FindObjectsOfTypeAll<TextMesh>())
             {
@@ -276,6 +285,9 @@ namespace LanguagePatches
         /// </summary>
         public void UpdateTextMeshPro()
         {
+            if (HighLogic.LoadedScene == GameScenes.LOADING)
+                return;
+
             // Patch all TextMeshs
             foreach (TMP_Text text in Resources.FindObjectsOfTypeAll<TMP_Text>())
             {
@@ -300,6 +312,9 @@ namespace LanguagePatches
         /// </summary>
         public void PopupDialogUpdate()
         {
+            if (HighLogic.LoadedScene == GameScenes.LOADING)
+                return;
+
             // Patch all PopupDialogs
             foreach (PopupDialog dialog in Resources.FindObjectsOfTypeAll<PopupDialog>())
             {
