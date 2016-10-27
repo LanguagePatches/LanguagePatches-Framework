@@ -7,7 +7,7 @@
  
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Regex;
 
 namespace LanguagePatches
 {
@@ -30,6 +30,11 @@ namespace LanguagePatches
         /// The scene where the translation gets applied
         /// </summary>
         public GameScenes? scene { get; set; }
+        
+        /// <summary>
+        /// The expression to check for this translation
+        /// </summary>
+        public Regex expression { get; set; }
 
         /// <summary>
         /// Creates a new Translation component from a config node
@@ -48,6 +53,11 @@ namespace LanguagePatches
             // Assign the new texts
             text = node.GetValue("text");
             translation = node.GetValue("translation");
+            String prepared = TranslationList.Prepare(text);
+            if (!LanguagePatches.Instance.caseSensitive)
+                expression = new Regex("^(?i)" + prepared + "$", RegexOptions.Compiled);
+            else
+                expression = new Regex("^" + prepared + "$", RegexOptions.Compiled | RegexOptions.None);
 
             // Loads scene value
             if (node.HasValue("scene"))

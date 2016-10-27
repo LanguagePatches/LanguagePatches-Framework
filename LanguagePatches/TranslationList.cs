@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Regex;
 
 namespace LanguagePatches
 {
@@ -40,8 +40,7 @@ namespace LanguagePatches
                         continue;
 
                     // Get matches
-                    String prepared = Prepare(translation.text);
-                    Match match = Regex.Match(text, "^" + prepared + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+                    Match match = translation.expression.Match(text);
 
                     // Check the match
                     if (!match.Success)
@@ -63,19 +62,19 @@ namespace LanguagePatches
         /// <summary>
         /// Creates a new list and fills it with values from a new config node
         /// </summary>
-        public TranslationList(ConfigNode node)
+        public TranslationList(ConfigNode config)
         {
-            if (node != null)
+            ConfigNode[] tNodes = config.GetNodes("TRANSLATION");
+            for (Int32 i = 0; i < tNodes.Length; i++)
             {
-                foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
-                    Add(new Translation(translation));
+                Add(new Translation(tNodes[i]));
             }
         }
 
         /// <summary>
         /// Modifies a string to be useable
         /// </summary>
-        public String Prepare(String input)
+        public static String Prepare(String input)
         {
             return input.Replace(@"\n", "\n").Replace(@"\r", "\r");
         }
