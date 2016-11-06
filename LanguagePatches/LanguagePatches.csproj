@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="AsyncMonoBehaviour.cs" />
     <Compile Include="CombinedList.cs" />
+    <Compile Include="LanguageAPI.cs" />
     <Compile Include="LanguagePatches.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -29,34 +29,41 @@ namespace LanguagePatches
         /// <returns>The translated representation of the input string</returns>
         public String this[String text]
         {
-            get
+            get { return Translate(text, null); }
+        }
+
+        public String Translate(String text, String context)
+        {
+            if (String.IsNullOrEmpty(context))
+                context = typeof(TranslationList).Assembly.GetName().Name;
+            
+            // Check translations
+            for (Int32 j = 0; j < Count; j++)
             {
-                // Check translations
-                for (Int32 j = 0; j < Count; j++)
-                {
-                    // Scene doesnt match
-                    Translation translation = base[j];
-                    if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
-                        continue;
+                // Scene doesnt match
+                Translation translation = base[j];
+                if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                    continue;
+                if (translation.context != context)
+                    continue;
 
-                    // Get matches
-                    Match match = translation.expression.Match(text);
+                // Get matches
+                Match match = translation.expression.Match(text);
 
-                    // Check the match
-                    if (!match.Success)
-                        continue;
+                // Check the match
+                if (!match.Success)
+                    continue;
 
-                    // Get the regex matches and create the return string
-                    GroupCollection groups = match.Groups;
-                    cache.Clear();
-                    for (Int32 i = 0; i < groups.Count; i++)
-                        cache.Add(groups[i].Value);
-                    return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), cache.ToArray());
-                }
-
-                // Nothing found
-                return text;
+                // Get the regex matches and create the return string
+                GroupCollection groups = match.Groups;
+                cache.Clear();
+                for (Int32 i = 0; i < groups.Count; i++)
+                    cache.Add(groups[i].Value);
+                return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), cache.ToArray());
             }
+
+            // Nothing found
+            return text;
         }
 
         /// <summary>

@@ -6,6 +6,7 @@
  */
  
 using System;
+using System.CodeDom;
 using System.IO;
 using System.Regex;
 
@@ -37,6 +38,11 @@ namespace LanguagePatches
         public Regex expression { get; set; }
 
         /// <summary>
+        /// The context for the translations
+        /// </summary>
+        public String context { get; set; }
+
+        /// <summary>
         /// Creates a new Translation component from a config node
         /// </summary>
         /// <param name="node">The config node where the </param>
@@ -64,6 +70,12 @@ namespace LanguagePatches
                 scene = (GameScenes)Enum.Parse(typeof(GameScenes), node.GetValue("scene"));
             else
                 scene = null;
+
+            // Context
+            if (node.HasValue("context"))
+                context = node.GetValue("context");
+            else
+                context = typeof(Translation).Assembly.GetName().Name;
 
             // Replace variable placeholders
             translation = Regex.Replace(translation, @"@(\d*)", "{$1}");

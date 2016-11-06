@@ -413,5 +413,17 @@ namespace LanguagePatches
         /// Whether the main menu was already patched
         /// </summary>
         private Boolean mainMenuPatched;
+
+        /// <summary>
+        /// Mod API
+        /// </summary>
+        public static String Translate(String input, String context)
+        {
+            if (Instance == null)
+                return input;
+            if (Instance.translations == null)
+                return input;
+            return Instance.translations.Translate(input, context);
+        }
     }
 }
