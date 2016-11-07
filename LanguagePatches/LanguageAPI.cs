@@ -28,7 +28,7 @@ namespace LanguagePatches
         /// <summary>
         /// Whether the Language Patches Assembly is there
         /// </summary>
-        private static Boolean hasLanguagePatches { get; set; }
+        internal static Boolean hasLanguagePatches { get; private set; }
 
         static LanguageAPI()
         {
