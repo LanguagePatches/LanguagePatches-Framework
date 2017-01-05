@@ -7,16 +7,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Regex;
 
 namespace LanguagePatches
 {
     /// <summary>
     /// A List that contains translations and that can translate texts
     /// </summary>
-    public class TranslationList : HashSet<Translation>
+    public class TranslationList : List<Translation>
     {
         // Some caching for strings
         private List<Object> cache = new List<Object>();
@@ -28,49 +29,59 @@ namespace LanguagePatches
         /// <returns>The translated representation of the input string</returns>
         public String this[String text]
         {
-            get
+            get { return Translate(text, null); }
+        }
+
+        public String Translate(String text, String context)
+        {
+            if (String.IsNullOrEmpty(context))
+                context = typeof(TranslationList).Assembly.GetName().Name;
+            
+            // Check translations
+            for (Int32 j = 0; j < Count; j++)
             {
-                // Check translations
-                foreach (Translation translation in this)
-                {
-                    // Scene doesnt match
-                    if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
-                        continue;
+                // Scene doesnt match
+                Translation translation = base[j];
+                if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                    continue;
+                if (translation.context != context)
+                    continue;
 
-                    // Get matches
-                    String prepared = Prepare(translation.text);
-                    Match match = Regex.Match(text, "^" + prepared + "$", !LanguagePatches.Instance.caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+                // Get matches
+                Match match = translation.expression.Match(text);
 
-                    // Check the match
-                    if (!match.Success)
-                        continue;
+                // Check the match
+                if (!match.Success)
+                    continue;
 
-                    // Get the regex matches and create the return string
-                    GroupCollection groups = match.Groups;
-                    cache.Clear();
-                    for (Int32 i = 0; i < groups.Count; i++)
-                        cache.Add(groups[i].Value);
-                    return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), cache.ToArray());
-                }
-
-                // Nothing found
-                return text;
+                // Get the regex matches and create the return string
+                GroupCollection groups = match.Groups;
+                cache.Clear();
+                for (Int32 i = 0; i < groups.Count; i++)
+                    cache.Add(groups[i].Value);
+                return groups.Count == 1 ? Prepare(translation.translation) : String.Format(Prepare(translation.translation), cache.ToArray());
             }
+
+            // Nothing found
+            return text;
         }
 
         /// <summary>
         /// Creates a new list and fills it with values from a new config node
         /// </summary>
-        public TranslationList(ConfigNode node)
+        public TranslationList(ConfigNode config)
         {
-            foreach (ConfigNode translation in node.GetNodes("TRANSLATION"))
-                Add(new Translation(translation));
+            ConfigNode[] tNodes = config.GetNodes("TRANSLATION");
+            for (Int32 i = 0; i < tNodes.Length; i++)
+            {
+                Add(new Translation(tNodes[i]));
+            }
         }
 
         /// <summary>
         /// Modifies a string to be useable
         /// </summary>
-        public String Prepare(String input)
+        public static String Prepare(String input)
         {
             return input.Replace(@"\n", "\n").Replace(@"\r", "\r");
         }

@@ -6,8 +6,9 @@
  */
  
 using System;
+using System.CodeDom;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Regex;
 
 namespace LanguagePatches
 {
@@ -30,6 +31,16 @@ namespace LanguagePatches
         /// The scene where the translation gets applied
         /// </summary>
         public GameScenes? scene { get; set; }
+        
+        /// <summary>
+        /// The expression to check for this translation
+        /// </summary>
+        public Regex expression { get; set; }
+
+        /// <summary>
+        /// The context for the translations
+        /// </summary>
+        public String context { get; set; }
 
         /// <summary>
         /// Creates a new Translation component from a config node
@@ -48,12 +59,23 @@ namespace LanguagePatches
             // Assign the new texts
             text = node.GetValue("text");
             translation = node.GetValue("translation");
+            String prepared = TranslationList.Prepare(text);
+            if (!LanguagePatches.Instance.caseSensitive)
+                expression = new Regex("^(?i)" + prepared + "$", RegexOptions.Compiled);
+            else
+                expression = new Regex("^" + prepared + "$", RegexOptions.Compiled | RegexOptions.None);
 
             // Loads scene value
             if (node.HasValue("scene"))
                 scene = (GameScenes)Enum.Parse(typeof(GameScenes), node.GetValue("scene"));
             else
                 scene = null;
+
+            // Context
+            if (node.HasValue("context"))
+                context = node.GetValue("context");
+            else
+                context = typeof(Translation).Assembly.GetName().Name;
 
             // Replace variable placeholders
             translation = Regex.Replace(translation, @"@(\d*)", "{$1}");
