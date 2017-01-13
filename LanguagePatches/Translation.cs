@@ -28,6 +28,11 @@ namespace LanguagePatches
         public String translation { get; set; }
 
         /// <summary>
+        /// The replacement size, uses integer
+        /// </summary>
+        public Int32 size { get; set; }
+
+        /// <summary>
         /// The scene where the translation gets applied
         /// </summary>
         public GameScenes? scene { get; set; }
@@ -70,6 +75,12 @@ namespace LanguagePatches
                 scene = (GameScenes)Enum.Parse(typeof(GameScenes), node.GetValue("scene"));
             else
                 scene = null;
+
+            // Loads size value
+            if (node.HasValue("size"))
+                size = Int32.Parse(node.GetValue("size"));
+            else
+                size = -1;
 
             // Context
             if (node.HasValue("context"))

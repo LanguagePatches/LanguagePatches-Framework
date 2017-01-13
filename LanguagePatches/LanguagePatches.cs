@@ -296,6 +296,13 @@ namespace LanguagePatches
                     if (text.font?.material?.mainTexture != null)
                         rend.material.mainTexture = text.font.material.mainTexture;
                 }
+                // Change size
+                Int32 NewSize = translations.ChangeSize(text.text, null);
+                if (NewSize != -1)
+                {
+                    text.fontSize = NewSize;
+                }
+
                 if (patched.Contains<TextMesh, String>(text))
                     patched.Set(text, text.text);
                 else
@@ -328,6 +335,14 @@ namespace LanguagePatches
                     Debug.Log("[TMP] " + text.font.name + text.text);
                     text.font = TMP_fonts[text.font.name];
                 }
+
+                // Change size
+                Int32 NewSize = translations.ChangeSize(text.text, null);
+                if (NewSize!=-1)
+                {
+                    text.fontSize = NewSize;
+                }
+
 
                 if (patched.Contains<TMP_Text, String>(text))
                     patched.Set(text, text.text);
