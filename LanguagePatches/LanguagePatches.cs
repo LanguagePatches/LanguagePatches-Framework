@@ -60,6 +60,11 @@ namespace LanguagePatches
         public Dictionary<String, Font> fonts { get; set; }
 
         /// <summary>
+        /// TextMeshPro Fonts, loaded from Unity Asset Bundles
+        /// </summary>
+        public Dictionary<String, TMP_FontAsset> TMP_fonts { get; set; }
+
+        /// <summary>
         /// Patched UI elements
         /// </summary>
         private CombinedDictionary patched { get; set; }
@@ -96,6 +101,9 @@ namespace LanguagePatches
 
             // Create fonts
             fonts = new Dictionary<String, Font>();
+
+            // Create TMP_FontAssets
+            TMP_fonts = new Dictionary<String, TMP_FontAsset>();
 
             // Create images
             images = new Dictionary<String, Texture2D>();
@@ -144,6 +152,21 @@ namespace LanguagePatches
                     fonts.Add(name, bundle.LoadAsset<Font>(split[1]));
                     bundle.Unload(false);
                 }
+            }
+
+            // Load the TMP_FontAssets
+            foreach (ConfigNode node in config.GetNodes("TMPFONT"))
+            {
+                // Vars
+                String name = node.GetValue("name");
+                String file = node.GetValue("file");
+
+                String[] split = file.Split(':');
+
+                AssetBundle bundle = AssetBundle.LoadFromMemory(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
+                TMP_fonts.Add(name, bundle.LoadAsset <TMP_FontAsset>(split[1]));
+                bundle.Unload(false);
+
             }
 
             // Load images
@@ -281,7 +304,7 @@ namespace LanguagePatches
         }
 
         /// <summary>
-        /// Updates Unity textmeshes
+        /// Updates TextMeshPro
         /// </summary>
         public void UpdateTextMeshPro()
         {
@@ -300,6 +323,12 @@ namespace LanguagePatches
 
                 // Replace text and font
                 text.text = translations[text.text];
+                if (TMP_fonts.ContainsKey(text.font.name))
+                {
+                    Debug.Log("[TMP] " + text.font.name + text.text);
+                    text.font = TMP_fonts[text.font.name];
+                }
+
                 if (patched.Contains<TMP_Text, String>(text))
                     patched.Set(text, text.text);
                 else
