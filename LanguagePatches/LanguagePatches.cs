@@ -340,7 +340,6 @@ namespace LanguagePatches
                 text.text = translations[text.text];
                 if (TMP_fonts.ContainsKey(text.font.name))
                 {
-                    Debug.Log("[TMP] " + text.font.name + text.text);
                     text.font = TMP_fonts[text.font.name];
                 }
 
