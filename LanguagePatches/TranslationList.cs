@@ -88,11 +88,6 @@ namespace LanguagePatches
                 if (!match.Success)
                     continue;
 
-                // Get the regex matches and create the return string
-                GroupCollection groups = match.Groups;
-                cache.Clear();
-                for (Int32 i = 0; i < groups.Count; i++)
-                    cache.Add(groups[i].Value);
                 return translation.size;
             }
 
