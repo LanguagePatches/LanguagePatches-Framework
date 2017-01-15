@@ -36,11 +36,11 @@ namespace LanguagePatches
         {
             if (String.IsNullOrEmpty(context))
                 context = typeof(TranslationList).Assembly.GetName().Name;
-            
+
             // Check translations
             for (Int32 j = 0; j < Count; j++)
             {
-                // Scene doesnt match
+                // Scene does not match
                 Translation translation = base[j];
                 if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
                     continue;
@@ -64,6 +64,35 @@ namespace LanguagePatches
 
             // Nothing found
             return text;
+        }
+
+        public Int32 ChangeSize(String text, String context)
+        {
+            if (String.IsNullOrEmpty(context))
+                context = typeof(TranslationList).Assembly.GetName().Name;
+            
+            // Check translations
+            for (Int32 j = 0; j < Count; j++)
+            {
+                // Scene does not match
+                Translation translation = base[j];
+                if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                    continue;
+                if (translation.context != context)
+                    continue;
+
+                // Get matches
+                Match match = translation.expression.Match(text);
+
+                // Check the match
+                if (!match.Success)
+                    continue;
+
+                return translation.size;
+            }
+
+            // Nothing found
+            return -1;
         }
 
         /// <summary>
