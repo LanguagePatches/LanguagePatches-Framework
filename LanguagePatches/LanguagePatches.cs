@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -170,7 +170,7 @@ namespace LanguagePatches
                 String[] split = file.Split(':');
 
                 AssetBundle bundle = AssetBundle.LoadFromMemory(File.ReadAllBytes(KSPUtil.ApplicationRootPath + "GameData/" + split[0]));
-                TMP_fonts.Add(name, bundle.LoadAsset <TMP_FontAsset>(split[1]));
+                TMP_fonts.Add(name, bundle.LoadAsset<TMP_FontAsset>(split[1]));
                 bundle.Unload(false);
 
             }
@@ -381,9 +381,9 @@ namespace LanguagePatches
                 {
                     Utility.DoRecursive(guiBase, childBase => childBase.children, text =>
                     {
-                        if (patched.Contains<DialogGUIBase, String>(text) && 
-                            (!patched.Contains<DialogGUIBase, String>(text) || 
-                              patched.Get<DialogGUIBase, String>(text) == text.OptionText || 
+                        if (patched.Contains<DialogGUIBase, String>(text) &&
+                            (!patched.Contains<DialogGUIBase, String>(text) ||
+                              patched.Get<DialogGUIBase, String>(text) == text.OptionText ||
                               Utility.CompareDialog(text, patched.Get<DialogGUIBase, String>(text)))) return;
 
                         // Log

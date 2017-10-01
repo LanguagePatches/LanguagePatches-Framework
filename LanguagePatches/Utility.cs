@@ -1,7 +1,7 @@
 ﻿/** 
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -44,17 +44,17 @@ namespace LanguagePatches
             // Replace text
             if (text is DialogGUIButton)
             {
-                DialogGUIButton gui = ((DialogGUIButton) text);
+                DialogGUIButton gui = ((DialogGUIButton)text);
                 return gui.GetString?.Invoke() == cache;
             }
             if (text is DialogGUIToggle)
             {
-                DialogGUIToggle gui = ((DialogGUIToggle) text);
+                DialogGUIToggle gui = ((DialogGUIToggle)text);
                 return gui.setLabel?.Invoke() == cache;
             }
             if (text is DialogGUILabel)
             {
-                DialogGUILabel gui = ((DialogGUILabel) text);
+                DialogGUILabel gui = ((DialogGUILabel)text);
                 return gui.GetString?.Invoke() == cache;
             }
             return false;

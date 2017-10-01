@@ -1,10 +1,10 @@
 ﻿/** 
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
- 
+
 using System;
 using System.CodeDom;
 using System.IO;
@@ -36,7 +36,7 @@ namespace LanguagePatches
         /// The scene where the translation gets applied
         /// </summary>
         public GameScenes? scene { get; set; }
-        
+
         /// <summary>
         /// The expression to check for this translation
         /// </summary>

@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  * Modders should copy this file into their mods for easy translation
  */
@@ -32,18 +32,18 @@ namespace LanguagePatches
 
         static LanguageAPI()
         {
-            Type[] types = AssemblyLoader.loadedAssemblies.SelectMany (a => a.assembly.GetTypes ()).ToArray ();
+            Type[] types = AssemblyLoader.loadedAssemblies.SelectMany(a => a.assembly.GetTypes()).ToArray();
             Type languagePatches = types.FirstOrDefault(t => t.Name == "LanguagePatches");
             if (languagePatches != null)
             {
                 hasLanguagePatches = true;
                 MethodInfo translateInfo = languagePatches.GetMethod("Translate", BindingFlags.Public | BindingFlags.Static);
-                translate = (TranslationDelegate) Delegate.CreateDelegate(typeof(TranslationDelegate), null, translateInfo);
+                translate = (TranslationDelegate)Delegate.CreateDelegate(typeof(TranslationDelegate), null, translateInfo);
             }
             else
                 hasLanguagePatches = false;
         }
-        
+
         /// <summary>
         /// Translates a string into the language loaded by the Language Patches Framework.
         /// The translation has to exist in the correct context, otherwise it will be english.

@@ -1,30 +1,9 @@
 ﻿/**
- * Kopernicus Planetary System Modifier
- * ====================================
- * Created by: BryceSchroeder and Teknoman117 (aka. Nathaniel R. Lewis)
- * Maintained by: Thomas P., NathanKell and KillAshley
- * Additional Content by: Gravitasi, aftokino, KCreator, Padishar, Kragrathea, OvenProofMars, zengei, MrHappyFace
- * ------------------------------------------------------------- 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
- * 
- * This library is intended to be used as a plugin for Kerbal Space Program
- * which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
- * itself is governed by the terms of its EULA, not the license above.
- * 
- * https://kerbalspaceprogram.com
+ * Language Patches Framework
+ * Translates the game into different Languages
+ * Copyright (c) 2017 Thomas P.
+ * Licensed under the terms of the MIT License
+ * Modders should copy this file into their mods for easy translation
  */
 
 using System;
@@ -43,7 +22,7 @@ namespace LanguagePatches
         // Logger output path
         public static string LogDirectory
         {
-            get { return KSPUtil.ApplicationRootPath + "Logs/" + typeof (Logger).Assembly.GetName().Name + "/"; }
+            get { return KSPUtil.ApplicationRootPath + "Logs/" + typeof(Logger).Assembly.GetName().Name + "/"; }
         }
 
         // ==> Implement own version
@@ -160,19 +139,19 @@ namespace LanguagePatches
                 logHeader = "//" + logHeader + "//";
 
                 loggerStream.WriteLine(logHeader + "\n" + logVersion + "\n" + logHeader); // Don't use Log() because we don't want a date time in front of the Versioning.
-                Log ("Logger \"" + LogFileName + "\" was created");
+                Log("Logger \"" + LogFileName + "\" was created");
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                Debug.LogException (e);
+                Debug.LogException(e);
             }
         }
 
         // Cleanup the logger
         ~Logger()
         {
-            loggerStream.Flush ();
-            loggerStream.Close ();
+            loggerStream.Flush();
+            loggerStream.Close();
         }
 
         // Initialize the Logger (i.e. delete old logs) 
@@ -185,14 +164,14 @@ namespace LanguagePatches
                     Directory.CreateDirectory(LogDirectory);
 
                 // Clear out the old log files
-                foreach(string file in Directory.GetFiles(LogDirectory))
+                foreach (string file in Directory.GetFiles(LogDirectory))
                 {
                     File.Delete(file);
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                Debug.LogException (e);
+                Debug.LogException(e);
                 return;
             }
 

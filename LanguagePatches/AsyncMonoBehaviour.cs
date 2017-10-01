@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -40,7 +40,7 @@ namespace LanguagePatches
             if (actions.ContainsKey(method))
                 actions[method].Add(task);
             else
-                actions.Add(method, new List<Action> {task});
+                actions.Add(method, new List<Action> { task });
         }
 
         /// <summary>

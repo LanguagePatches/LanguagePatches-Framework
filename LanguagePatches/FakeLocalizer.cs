@@ -1,7 +1,7 @@
 /**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -44,12 +44,12 @@ namespace LanguagePatches
         public static String Format(String template, params Object[] list)
         {
             String[] array = new String[list.Length];
-			for (Int32 i = 0; i < list.Length; i++)
-			{
-				array[i] = list[i].ToString();
-			}
+            for (Int32 i = 0; i < list.Length; i++)
+            {
+                array[i] = list[i].ToString();
+            }
             String output = (String)_Format.Invoke(Localizer.Instance, new Object[] { template, array });
             return LanguagePatches.Translate(output, null);
-        }        
+        }
     }
 }

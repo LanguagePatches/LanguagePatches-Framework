@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -70,7 +70,7 @@ namespace LanguagePatches
         {
             if (String.IsNullOrEmpty(context))
                 context = typeof(TranslationList).Assembly.GetName().Name;
-            
+
             // Check translations
             for (Int32 j = 0; j < Count; j++)
             {

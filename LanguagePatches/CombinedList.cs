@@ -1,7 +1,7 @@
 ﻿/**
  * Language Patches Framework
  * Translates the game into different Languages
- * Copyright (c) 2016 Thomas P.
+ * Copyright (c) 2017 Thomas P.
  * Licensed under the terms of the MIT License
  */
 
@@ -37,7 +37,7 @@ namespace LanguagePatches
             if (_values.ContainsKey(TypeOf<T1, T2>()))
                 _values[TypeOf<T1, T2>()].Add(key, value);
             else
-                _values.Add(TypeOf<T1, T2>(), new Dictionary<T1, T2> {{key, value}});
+                _values.Add(TypeOf<T1, T2>(), new Dictionary<T1, T2> { { key, value } });
         }
 
         /// <summary>
