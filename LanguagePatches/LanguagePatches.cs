@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using KSP.Localization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -78,6 +79,11 @@ namespace LanguagePatches
         {
             // Instance
             Instance = this;
+
+            // Redirect the Localization Methods to new methods
+            RedirectionHelper.RedirectCalls(new Func<String, String>(Localizer.Format).Method, new Func<String, String>(FakeLocalizer.Format).Method);
+            RedirectionHelper.RedirectCalls(new Func<String, String[], String>(Localizer.Format).Method, new Func<String, String[], String>(FakeLocalizer.Format).Method);
+            RedirectionHelper.RedirectCalls(new Func<String, System.Object[], String>(Localizer.Format).Method, new Func<String, System.Object[], String>(FakeLocalizer.Format).Method);
 
             // Get the ConfigNodes
             ConfigNode[] nodes = GameDatabase.Instance.GetConfigs("LANGUAGEPATCHES").Select(c => c.config).ToArray();
