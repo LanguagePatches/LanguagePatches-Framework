@@ -26,6 +26,8 @@ namespace LanguagePatches
         public static String Format(String template)
         {
             String output = (String)_Format.Invoke(Localizer.Instance, new Object[] { template, empty });
+            if (output == template)
+                return template;
             return LanguagePatches.Translate(output, null);
         }
 
@@ -35,6 +37,8 @@ namespace LanguagePatches
         public static String Format(String template, params String[] list)
         {
             String output = (String)_Format.Invoke(Localizer.Instance, new Object[] { template, list });
+            if (output == template)
+                return template;
             return LanguagePatches.Translate(output, null);
         }
 
@@ -49,6 +53,8 @@ namespace LanguagePatches
                 array[i] = list[i].ToString();
             }
             String output = (String)_Format.Invoke(Localizer.Instance, new Object[] { template, array });
+            if (output == template)
+                return template;
             return LanguagePatches.Translate(output, null);
         }
     }
