@@ -453,7 +453,7 @@ namespace LanguagePatches
                 menu.DefaultFlagURL = urls[2] ?? menu.DefaultFlagURL;
 
                 // Update callbacks
-                typeof(MainMenu).GetField("pName", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, null);
+                typeof(MainMenu).GetProperties(BindingFlags.NonPublic | BindingFlags.Static).FirstOrDefault()?.SetValue(null, menu.DefaultFlagURL, null);
                 typeof(MainMenu).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(menu, null);
                 mainMenuPatched = true;
             }
