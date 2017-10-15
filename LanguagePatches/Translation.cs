@@ -77,7 +77,7 @@ namespace LanguagePatches
             if (node.HasValue("scene"))
             {
                 String[] scenes = node.GetValue("scene").Split('|');
-                scene = scenes.Select(s => (GameScenes)Enum.Parse(typeof(GameScenes), s)).ToList();
+                scene = scenes.Select(s => (GameScenes)Enum.Parse(typeof(GameScenes), s.Trim())).ToList();
             }
             else
                 scene = null;
