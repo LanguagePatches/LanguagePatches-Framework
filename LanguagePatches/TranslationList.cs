@@ -42,7 +42,7 @@ namespace LanguagePatches
             {
                 // Scene does not match
                 Translation translation = base[j];
-                if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                if (translation.scene != null && (!translation.scene.Contains(HighLogic.LoadedScene)) && (!MapView.MapIsEnabled || !translation.scene.Contains(GameScenes.TRACKSTATION)))
                     continue;
                 if (translation.context != context)
                     continue;
@@ -76,7 +76,7 @@ namespace LanguagePatches
             {
                 // Scene does not match
                 Translation translation = base[j];
-                if (translation.scene.HasValue && translation.scene != HighLogic.LoadedScene)
+                if (translation.scene != null && (!translation.scene.Contains(HighLogic.LoadedScene)) && (!MapView.MapIsEnabled || !translation.scene.Contains(GameScenes.TRACKSTATION)))
                     continue;
                 if (translation.context != context)
                     continue;

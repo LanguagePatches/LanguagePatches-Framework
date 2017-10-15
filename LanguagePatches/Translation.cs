@@ -7,8 +7,11 @@
 
 using System;
 using System.CodeDom;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Regex;
+using UnityEngine;
 
 namespace LanguagePatches
 {
@@ -35,7 +38,7 @@ namespace LanguagePatches
         /// <summary>
         /// The scene where the translation gets applied
         /// </summary>
-        public GameScenes? scene { get; set; }
+        public List<GameScenes> scene { get; set; }
 
         /// <summary>
         /// The expression to check for this translation
@@ -72,7 +75,10 @@ namespace LanguagePatches
 
             // Loads scene value
             if (node.HasValue("scene"))
-                scene = (GameScenes)Enum.Parse(typeof(GameScenes), node.GetValue("scene"));
+            {
+                String[] scenes = node.GetValue("scene").Split('|');
+                scene = scenes.Select(s => (GameScenes)Enum.Parse(typeof(GameScenes), s)).ToList();
+            }
             else
                 scene = null;
 
